@@ -35,32 +35,38 @@ interface UserData {
 }
 
 interface ProductoData {
-  id?: number;
+  _id?: string;
   nombre: string;
   descripcion?: string;
-  precio: number;
-  categoriaId: number;
-  tallaId?: number;
-  localidadId?: number;
+  tipoTela?: string;
+  imagenURL?: string;
+  localidadId: string | LocalidadData;
+  tallasDisponibles?: (string | TallaData)[];
+  // Campos adicionales para compatibilidad con frontend
+  categoriaId?: number;
   disponible?: boolean;
+  id?: string; // Alias para _id
 }
 
 interface CategoriaData {
   id?: number;
   nombre: string;
   descripcion?: string;
+  imagenURL?: string;
   activo?: boolean;
 }
 
 interface TallaData {
-  id?: number;
-  nombre: string;
-  descripcion?: string;
-  activo?: boolean;
+  _id?: string;
+  categoriaId?: string;
+  genero?: string;
+  talla: string;
+  rangoEdad?: string;
+  medida?: string;
 }
 
 interface LocalidadData {
-  id?: number;
+  _id?: string;
   nombre: string;
   descripcion?: string;
   activo?: boolean;
@@ -211,9 +217,24 @@ export const publicAPI = {
   // Categorías
   getCategorias: async (): Promise<ApiResponse<CategoriaData[]>> => {
     try {
-      const response = await api.get('/public/categorias');
-      return response;
+      const response = await api.get('/categorias');
+
+      // Verificar que cada categoría tenga los campos necesarios
+      if (Array.isArray(response)) {
+        response.forEach((categoria: any, index: number) => {
+          // Removed console logs for each category
+        });
+      }
+
+      // El interceptor ya extrajo response.data, así que response es directamente el array
+      const formattedResponse: ApiResponse<CategoriaData[]> = {
+        data: response as any,
+        message: 'Categorías obtenidas exitosamente'
+      };
+
+      return formattedResponse;
     } catch (error) {
+      console.error('❌ Error al obtener categorías:', error);
       throw error;
     }
   },
@@ -221,7 +242,7 @@ export const publicAPI = {
   // Localidades
   getLocalidades: async (): Promise<ApiResponse<LocalidadData[]>> => {
     try {
-      const response = await api.get('/public/localidades');
+      const response = await api.get('/localidades');
       return response;
     } catch (error) {
       throw error;
@@ -231,7 +252,7 @@ export const publicAPI = {
   // Tallas
   getTallas: async (): Promise<ApiResponse<TallaData[]>> => {
     try {
-      const response = await api.get('/public/tallas');
+      const response = await api.get('/tallas');
       return response;
     } catch (error) {
       throw error;
@@ -502,226 +523,4 @@ export const adminAPI = {
       throw error;
     }
   },
-
-  // Gestión de localidades
-  getLocalidades: async (): Promise<ApiResponse<LocalidadData[]>> => {
-    try {
-      const response = await api.get('/localidades');
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  createLocalidad: async (localidadData: LocalidadData): Promise<ApiResponse<LocalidadData>> => {
-    try {
-      const response = await api.post('/localidades', localidadData);
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  updateLocalidad: async (localidadId: number | string, localidadData: Partial<LocalidadData>): Promise<ApiResponse<LocalidadData>> => {
-    try {
-      const response = await api.put(`/localidades/${localidadId}`, localidadData);
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  deleteLocalidad: async (localidadId: number | string): Promise<ApiResponse> => {
-    try {
-      const response = await api.delete(`/localidades/${localidadId}`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  // Gestión de eventos
-  getEventos: async (): Promise<ApiResponse<EventoData[]>> => {
-    try {
-      const response = await api.get('/eventos');
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  createEvento: async (eventoData: EventoData): Promise<ApiResponse<EventoData>> => {
-    try {
-      const response = await api.post('/eventos', eventoData);
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  updateEvento: async (eventoId: number | string, eventoData: Partial<EventoData>): Promise<ApiResponse<EventoData>> => {
-    try {
-      const response = await api.put(`/eventos/${eventoId}`, eventoData);
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  deleteEvento: async (eventoId: number | string): Promise<ApiResponse> => {
-    try {
-      const response = await api.delete(`/eventos/${eventoId}`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  // Gestión de fotos
-  getFotos: async (): Promise<ApiResponse<FotoData[]>> => {
-    try {
-      const response = await api.get('/fotos');
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  createFoto: async (formData: FormData): Promise<ApiResponse<FotoData>> => {
-    try {
-      const response = await api.post('/fotos', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  updateFoto: async (fotoId: number | string, formData: FormData): Promise<ApiResponse<FotoData>> => {
-    try {
-      const response = await api.put(`/fotos/${fotoId}`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  deleteFoto: async (fotoId: number | string): Promise<ApiResponse> => {
-    try {
-      const response = await api.delete(`/fotos/${fotoId}`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  // Gestión de videos
-  getVideos: async (): Promise<ApiResponse<VideoData[]>> => {
-    try {
-      const response = await api.get('/videos');
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  createVideo: async (videoData: VideoData): Promise<ApiResponse<VideoData>> => {
-    try {
-      const response = await api.post('/videos', videoData);
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  updateVideo: async (videoId: number | string, videoData: Partial<VideoData>): Promise<ApiResponse<VideoData>> => {
-    try {
-      const response = await api.put(`/videos/${videoId}`, videoData);
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  deleteVideo: async (videoId: number | string): Promise<ApiResponse> => {
-    try {
-      const response = await api.delete(`/videos/${videoId}`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  // Gestión de servicios
-  getServicios: async (): Promise<ApiResponse<ServicioData[]>> => {
-    try {
-      const response = await api.get('/servicios');
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  createServicio: async (formData: FormData): Promise<ApiResponse<ServicioData>> => {
-    try {
-      const response = await api.post('/servicios', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  updateServicio: async (servicioId: number | string, formData: FormData): Promise<ApiResponse<ServicioData>> => {
-    try {
-      const response = await api.put(`/servicios/${servicioId}`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  deleteServicio: async (servicioId: number | string): Promise<ApiResponse> => {
-    try {
-      const response = await api.delete(`/servicios/${servicioId}`);
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  // Gestión de información de la empresa (nosotros - misión/visión)
-  getNosotros: async (): Promise<ApiResponse<NosotrosData>> => {
-    try {
-      const response = await api.get('/nosotros');
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  updateNosotros: async (nosotrosData: NosotrosData): Promise<ApiResponse<NosotrosData>> => {
-    try {
-      const response = await api.post('/nosotros', nosotrosData);
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  },
 };
-
-export default api;

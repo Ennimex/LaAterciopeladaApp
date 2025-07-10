@@ -3,6 +3,11 @@ import { Dimensions, StyleSheet } from 'react-native';
 // Get screen dimensions for responsive calculations
 const { width, height } = Dimensions.get('window');
 
+// Mobile screen size categories
+const isSmallScreen = width < 375;
+const isMediumScreen = width >= 375 && width < 414;
+const isLargeScreen = width >= 414;
+
 // Define TypeScript interfaces for the style system
 interface ColorPalette {
   [key: string]: string | { [key: string]: string };
@@ -25,10 +30,16 @@ interface Typography {
 
 interface Spacing {
   unit: number;
-  scale: { [key: string]: string };
+  scale: { [key: string]: number };
   sections: { [key: string]: number };
   margins: { [key: string]: number };
   gaps: { [key: string]: number };
+  mobile: {
+    header: number;
+    content: number;
+    bottom: number;
+    safeArea: number;
+  };
 }
 
 interface Borders {
@@ -42,7 +53,16 @@ interface Shadows {
 }
 
 interface Breakpoints {
-  [key: string]: string;
+  mobile: {
+    small: number;  // iPhone SE, etc.
+    medium: number; // iPhone standard
+    large: number;  // iPhone Plus, Android large
+    tablet: number; // iPad, Android tablet
+  };
+  orientation: {
+    portrait: boolean;
+    landscape: boolean;
+  };
 }
 
 interface Animations {
@@ -52,19 +72,29 @@ interface Animations {
 }
 
 interface Components {
-  navbar: any;
-  sidebar: any;
-  footer: any;
+  // Componentes móviles específicos
+  header: any;
+  tabBar: any;
+  screen: any;
+  modal: any;
   button: any;
   card: any;
   input: any;
-  cssGlobals: { [key: string]: string };
+  list: any;
+  statusBar: any;
 }
 
 interface Utils {
   container: any;
   zIndex: { [key: string]: number | string };
   overlay: any;
+  mobile: {
+    safeArea: any;
+    orientation: any;
+    screen: any;
+    touch: any;
+    keyboardAware: any;
+  };
   migration: any;
   legacy: any;
 }
@@ -349,10 +379,10 @@ const stylesGlobal: StylesGlobal = {
   // ===============================
   typography: {
     families: {
-      display: 'Playfair Display,Times New Roman,serif',
-      body: 'Inter,system-ui,sans-serif',
-      script: 'Dancing Script,cursive',
-      mono: 'JetBrains Mono,monospace',
+      display: 'System', // iOS: San Francisco, Android: Roboto
+      body: 'System',
+      script: 'System', 
+      mono: 'Courier New', // Monospace disponible en ambas plataformas
     },
     scale: {
       xs: 12, // 0.75rem
@@ -474,51 +504,51 @@ const stylesGlobal: StylesGlobal = {
   spacing: {
     unit: 8,
     scale: {
-      0: '0px',
-      1: '4px',
-      2: '8px',
-      3: '12px',
-      4: '16px',
-      5: '20px',
-      6: '24px',
-      7: '28px',
-      8: '32px',
-      9: '36px',
-      10: '40px',
-      11: '44px',
-      12: '48px',
-      14: '56px',
-      15: '60px',
-      16: '64px',
-      18: '72px',
-      19: '76px',
-      20: '80px',
-      24: '96px',
-      28: '112px',
-      30: '120px',
-      32: '128px',
-      36: '144px',
-      40: '160px',
-      42: '168px',
-      44: '176px',
-      45: '180px',
-      48: '192px',
-      50: '200px',
-      52: '208px',
-      55: '220px',
-      56: '224px',
-      60: '240px',
-      62: '248px',
-      64: '256px',
-      70: '280px',
-      72: '288px',
-      75: '300px',
-      80: '320px',
-      88: '352px',
-      96: '384px',
-      100: '400px',
-      113: '452px',
-      200: '800px',
+      0: 0,
+      1: 4,
+      2: 8,
+      3: 12,
+      4: 16,
+      5: 20,
+      6: 24,
+      7: 28,
+      8: 32,
+      9: 36,
+      10: 40,
+      11: 44,
+      12: 48,
+      14: 56,
+      15: 60,
+      16: 64,
+      18: 72,
+      19: 76,
+      20: 80,
+      24: 96,
+      28: 112,
+      30: 120,
+      32: 128,
+      36: 144,
+      40: 160,
+      42: 168,
+      44: 176,
+      45: 180,
+      48: 192,
+      50: 200,
+      52: 208,
+      55: 220,
+      56: 224,
+      60: 240,
+      62: 248,
+      64: 256,
+      70: 280,
+      72: 288,
+      75: 300,
+      80: 320,
+      88: 352,
+      96: 384,
+      100: 400,
+      113: 452,
+      200: 800,
     },
     sections: {
       xs: 32, // 2rem = 32px
@@ -538,6 +568,12 @@ const stylesGlobal: StylesGlobal = {
       md: 24, // 1.5rem
       lg: 32, // 2rem
       xl: 48, // 3rem
+    },
+    mobile: {
+      header: 60, // Altura típica de header móvil
+      content: 16, // Padding de contenido
+      bottom: 80, // Altura de tab bar
+      safeArea: 44, // Safe area típica en iOS
     },
   },
 
@@ -659,15 +695,19 @@ const stylesGlobal: StylesGlobal = {
   },
 
   // ===============================
-  // BREAKPOINTS RESPONSIVOS
+  // BREAKPOINTS PARA MÓVIL
   // ===============================
   breakpoints: {
-    xs: '320px',
-    sm: '640px',
-    md: '768px',
-    lg: '1024px',
-    xl: '1280px',
-    '2xl': '1536px',
+    mobile: {
+      small: 320,  // iPhone SE y similares
+      medium: 375, // iPhone estándar
+      large: 414,  // iPhone Plus, Android large
+      tablet: 768, // iPad, tablets Android
+    },
+    orientation: {
+      portrait: height > width,
+      landscape: width > height,
+    },
   },
 
   // ===============================
@@ -704,28 +744,25 @@ const stylesGlobal: StylesGlobal = {
   },
 
   // ===============================
-  // COMPONENTES BASE
+  // COMPONENTES MÓVILES
   // ===============================
   components: {
-    navbar: {
+    // Header para navegación superior
+    header: {
       base: convertStyle({
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        height: pixelToRN('72px'),
-        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        height: 60,
+        backgroundColor: '#ffffff',
         borderBottomWidth: 1,
         borderBottomColor: '#ede9e6',
         shadowColor: '#2a241f',
-        shadowOffset: { width: 0, height: 1 },
+        shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
-        shadowRadius: 3,
-        zIndex: 1100,
+        shadowRadius: 4,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingHorizontal: pixelToRN('2rem'),
+        paddingHorizontal: 16,
+        paddingTop: 0, // Ajustar según safe area
       }),
       variants: {
         transparent: convertStyle({
@@ -733,438 +770,196 @@ const stylesGlobal: StylesGlobal = {
           borderBottomWidth: 0,
           shadowOpacity: 0,
         }),
-        solid: convertStyle({
-          backgroundColor: '#ffffff',
-        }),
-        luxury: convertStyle({
-          backgroundColor: '#ffffff', // Gradients not supported, using solid color
-          borderBottomWidth: 1,
-          borderBottomColor: '#e6a756',
-          shadowColor: '#e6a756',
-          shadowOpacity: 0.1,
-        }),
-        dark: convertStyle({
-          backgroundColor: 'rgba(42, 36, 31, 0.95)',
-          borderBottomWidth: 1,
-          borderBottomColor: '#524842',
-          color: '#ffffff',
-        }),
-      },
-      scrolled: convertStyle({
-        height: pixelToRN('64px'),
-        shadowColor: '#2a241f',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        backgroundColor: '#ffffff',
-      }),
-      brand: convertStyle({
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: pixelToRN('12px'),
-        fontFamily: 'Playfair Display,serif',
-        fontSize: pixelToRN('1.5rem'),
-        fontWeight: '700',
-        color: '#d63384',
-        textDecorationLine: 'none',
-      }),
-      nav: convertStyle({
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: pixelToRN('2rem'),
-      }),
-      navItem: convertStyle({
-        position: 'relative',
-      }),
-      navLink: convertStyle({
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: pixelToRN('8px'),
-        paddingVertical: pixelToRN('8px'),
-        paddingHorizontal: pixelToRN('16px'),
-        fontSize: pixelToRN('1rem'),
-        fontWeight: '500',
-        color: '#524842',
-        textDecorationLine: 'none',
-        borderRadius: pixelToRN('10px'),
-      }),
-      actions: convertStyle({
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: pixelToRN('1rem'),
-      }),
-      mobile: convertStyle({
-        paddingHorizontal: pixelToRN('1rem'),
-        height: pixelToRN('60px'),
-      }),
-      mobileMenu: convertStyle({
-        position: 'fixed',
-        top: pixelToRN('72px'),
-        left: 0,
-        right: 0,
-        backgroundColor: 'rgba(255, 255, 255, 0.98)',
-        borderBottomWidth: 1,
-        borderBottomColor: '#ede9e6',
-        shadowColor: '#2a241f',
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.1,
-        shadowRadius: 15,
-        padding: pixelToRN('1rem'),
-        zIndex: 1050,
-      }),
-      hamburger: convertStyle({
-        display: 'none',
-        flexDirection: 'column',
-        gap: pixelToRN('4px'),
-        width: pixelToRN('24px'),
-        height: pixelToRN('18px'),
-      }),
-      hamburgerLine: convertStyle({
-        width: '100%',
-        height: pixelToRN('2px'),
-        backgroundColor: '#524842',
-        borderRadius: pixelToRN('2px'),
-      }),
-    },
-    sidebar: {
-      base: convertStyle({
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: pixelToRN('280px'),
-        height,
-        backgroundColor: '#ffffff',
-        borderRightWidth: 1,
-        borderRightColor: '#ede9e6',
-        shadowColor: '#2a241f',
-        shadowOffset: { width: 4, height: 0 },
-        shadowOpacity: 0.1,
-        shadowRadius: 6,
-        zIndex: 1000,
-        flexDirection: 'column',
-      }),
-      variants: {
-        luxury: convertStyle({
-          backgroundColor: '#ffffff', // Gradients not supported
-          borderRightWidth: 1,
-          borderRightColor: '#e6a756',
+        primary: convertStyle({
+          backgroundColor: '#d63384',
         }),
         dark: convertStyle({
           backgroundColor: '#2a241f',
-          borderRightWidth: 1,
-          borderRightColor: '#524842',
-          color: '#ffffff',
-        }),
-        glass: convertStyle({
-          backgroundColor: 'rgba(255, 255, 255, 0.95)',
-        }),
-        minimal: convertStyle({
-          width: pixelToRN('64px'),
-          borderRightWidth: 1,
-          borderRightColor: '#ede9e6',
         }),
       },
-      collapsed: convertStyle({
-        width: pixelToRN('64px'),
+      title: convertStyle({
+        fontSize: 18,
+        fontWeight: '600',
+        color: '#2a241f',
+        textAlign: 'center',
+        flex: 1,
       }),
-      header: convertStyle({
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: pixelToRN('12px'),
-        padding: pixelToRN('1.5rem'),
-        borderBottomWidth: 1,
-        borderBottomColor: '#ede9e6',
-        minHeight: pixelToRN('72px'),
-      }),
-      logo: convertStyle({
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: pixelToRN('12px'),
-        textDecorationLine: 'none',
-      }),
-      logoIcon: convertStyle({
-        width: pixelToRN('32px'),
-        height: pixelToRN('32px'),
-        borderRadius: pixelToRN('8px'),
-        backgroundColor: '#d63384',
+      backButton: convertStyle({
+        width: 44,
+        height: 44,
         alignItems: 'center',
         justifyContent: 'center',
-        color: '#ffffff',
-        fontSize: pixelToRN('1.2rem'),
-        fontWeight: '700',
+        borderRadius: 22,
       }),
-      logoText: convertStyle({
-        fontFamily: 'Playfair Display,serif',
-        fontSize: pixelToRN('1.25rem'),
-        fontWeight: '700',
-        color: '#2a241f',
+      rightAction: convertStyle({
+        width: 44,
+        height: 44,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 22,
+      }),
+    },
+
+    // Tab Bar inferior
+    tabBar: {
+      base: convertStyle({
+        height: 80,
+        backgroundColor: '#ffffff',
+        borderTopWidth: 1,
+        borderTopColor: '#ede9e6',
+        flexDirection: 'row',
+        paddingBottom: 0, // Ajustar según safe area
+        shadowColor: '#2a241f',
+        shadowOffset: { width: 0, height: -2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      }),
+      tab: convertStyle({
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 8,
+      }),
+      tabIcon: convertStyle({
+        width: 24,
+        height: 24,
+        marginBottom: 4,
+      }),
+      tabLabel: convertStyle({
+        fontSize: 12,
+        fontWeight: '500',
+        color: '#8b7d74',
+      }),
+      tabActive: convertStyle({
+        color: '#d63384',
+      }),
+    },
+
+    // Contenedor de pantalla
+    screen: {
+      base: convertStyle({
+        flex: 1,
+        backgroundColor: '#fafaf9',
       }),
       content: convertStyle({
         flex: 1,
-        padding: pixelToRN('1rem'),
+        paddingHorizontal: 16,
+        paddingTop: 16,
       }),
-      nav: convertStyle({
-        flexDirection: 'column',
-        gap: pixelToRN('4px'),
-      }),
-      navItem: convertStyle({
-        position: 'relative',
-      }),
-      navLink: convertStyle({
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: pixelToRN('12px'),
-        paddingVertical: pixelToRN('12px'),
-        paddingHorizontal: pixelToRN('16px'),
-        fontSize: pixelToRN('0.95rem'),
-        fontWeight: '500',
-        color: '#524842',
-        textDecorationLine: 'none',
-        borderRadius: pixelToRN('10px'),
-      }),
-      navIcon: convertStyle({
-        width: pixelToRN('20px'),
-        height: pixelToRN('20px'),
+      centered: convertStyle({
+        flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
+        paddingHorizontal: 16,
       }),
-      navText: convertStyle({
+    },
+
+    // Modal
+    modal: {
+      base: convertStyle({
+        flex: 1,
+        backgroundColor: 'rgba(42, 36, 31, 0.75)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 16,
       }),
-      section: convertStyle({
-        marginTop: pixelToRN('2rem'),
-      }),
-      sectionTitle: convertStyle({
-        fontSize: pixelToRN('0.75rem'),
-        fontWeight: '600',
-        color: '#8b7d74',
-        textTransform: 'uppercase',
-        letterSpacing: pixelToRN('0.05em'),
-        paddingVertical: pixelToRN('8px'),
-        paddingHorizontal: pixelToRN('16px'),
-        marginBottom: pixelToRN('8px'),
-      }),
-      footer: convertStyle({
-        padding: pixelToRN('1rem'),
-        paddingHorizontal: pixelToRN('1.5rem'),
-        borderTopWidth: 1,
-        borderTopColor: '#ede9e6',
-        marginTop: 'auto',
-      }),
-      toggle: convertStyle({
-        position: 'absolute',
-        top: '50%',
-        right: pixelToRN('-12px'),
-        width: pixelToRN('24px'),
-        height: pixelToRN('24px'),
+      content: convertStyle({
         backgroundColor: '#ffffff',
-        borderWidth: 1,
-        borderColor: '#ede9e6',
-        borderRadius: pixelToRN('50%'),
+        borderRadius: 16,
+        padding: 24,
+        width: '100%',
+        maxWidth: 400,
+        shadowColor: '#2a241f',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.25,
+        shadowRadius: 32,
+      }),
+      header: convertStyle({
+        marginBottom: 16,
+      }),
+      title: convertStyle({
+        fontSize: 20,
+        fontWeight: '600',
+        color: '#2a241f',
+        textAlign: 'center',
+      }),
+      closeButton: convertStyle({
+        position: 'absolute',
+        top: 16,
+        right: 16,
+        width: 32,
+        height: 32,
         alignItems: 'center',
         justifyContent: 'center',
+        borderRadius: 16,
+        backgroundColor: '#f7f6f4',
+      }),
+    },
+
+    // Status Bar
+    statusBar: {
+      light: {
+        backgroundColor: '#fafaf9',
+        barStyle: 'dark-content',
+      },
+      dark: {
+        backgroundColor: '#2a241f',
+        barStyle: 'light-content',
+      },
+      primary: {
+        backgroundColor: '#d63384',
+        barStyle: 'light-content',
+      },
+    },
+
+    // Lista
+    list: {
+      container: convertStyle({
+        backgroundColor: '#ffffff',
+        borderRadius: 12,
+        marginVertical: 8,
         shadowColor: '#2a241f',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,
       }),
-      mobile: convertStyle({
-      }),
-      overlay: convertStyle({
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(42, 36, 31, 0.5)',
-        zIndex: 999,
-      }),
-    },
-    footer: {
-      base: convertStyle({
-        backgroundColor: '#2a241f',
-        color: '#ffffff',
-        marginTop: 'auto',
-      }),
-      variants: {
-        simple: convertStyle({
-          paddingVertical: pixelToRN('2rem'),
-          textAlign: 'center',
-          borderTopWidth: 1,
-          borderTopColor: '#524842',
-        }),
-        complex: convertStyle({
-          paddingVertical: pixelToRN('4rem'),
-          paddingBottom: pixelToRN('2rem'),
-        }),
-        luxury: convertStyle({
-          backgroundColor: '#2a241f', // Gradients not supported
-          borderTopWidth: 1,
-          borderTopColor: '#e6a756',
-        }),
-        minimal: convertStyle({
-          backgroundColor: '#fafaf9',
-          color: '#524842',
-          borderTopWidth: 1,
-          borderTopColor: '#ede9e6',
-          paddingVertical: pixelToRN('1.5rem'),
-        }),
-      },
-      main: convertStyle({
-        paddingVertical: pixelToRN('4rem'),
-        paddingBottom: pixelToRN('2rem'),
-      }),
-      grid: convertStyle({
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: pixelToRN('2rem'),
-        maxWidth: pixelToRN('1200px'),
-        marginHorizontal: 'auto',
-        paddingHorizontal: pixelToRN('2rem'),
-      }),
-      section: convertStyle({
-        flexDirection: 'column',
-        gap: pixelToRN('1rem'),
-      }),
-      brand: convertStyle({
-        flexDirection: 'column',
-        gap: pixelToRN('1rem'),
-        maxWidth: pixelToRN('300px'),
-      }),
-      logo: convertStyle({
+      item: convertStyle({
         flexDirection: 'row',
         alignItems: 'center',
-        gap: pixelToRN('12px'),
-        marginBottom: pixelToRN('1rem'),
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: '#f7f6f4',
       }),
-      logoIcon: convertStyle({
-        width: pixelToRN('40px'),
-        height: pixelToRN('40px'),
-        borderRadius: pixelToRN('10px'),
-        backgroundColor: '#d63384',
-        alignItems: 'center',
-        justifyContent: 'center',
-        color: '#ffffff',
-        fontSize: pixelToRN('1.5rem'),
-        fontWeight: '700',
+      itemLast: convertStyle({
+        borderBottomWidth: 0,
       }),
-      logoText: convertStyle({
-        fontFamily: 'Playfair Display,serif',
-        fontSize: pixelToRN('1.5rem'),
-        fontWeight: '700',
-        color: '#ffffff',
-      }),
-      description: convertStyle({
-        fontSize: pixelToRN('0.95rem'),
-        lineHeight: 1.6,
-        color: '#b8aca4',
-      }),
-      title: convertStyle({
-        fontSize: pixelToRN('1.125rem'),
-        fontWeight: '600',
-        color: '#ffffff',
-        marginBottom: pixelToRN('1rem'),
-      }),
-      nav: convertStyle({
-        flexDirection: 'column',
-        gap: pixelToRN('8px'),
-      }),
-      navLink: convertStyle({
-        color: '#b8aca4',
-        textDecorationLine: 'none',
-        fontSize: pixelToRN('0.95rem'),
-      }),
-      contact: convertStyle({
-        flexDirection: 'column',
-        gap: pixelToRN('12px'),
-      }),
-      contactItem: convertStyle({
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: pixelToRN('12px'),
-        color: '#b8aca4',
-        fontSize: pixelToRN('0.95rem'),
-      }),
-      contactIcon: convertStyle({
-        width: pixelToRN('20px'),
-        height: pixelToRN('20px'),
-        color: '#d63384',
-      }),
-      social: convertStyle({
-        flexDirection: 'row',
-        gap: pixelToRN('1rem'),
-        marginTop: pixelToRN('1rem'),
-      }),
-      socialLink: convertStyle({
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: pixelToRN('40px'),
-        height: pixelToRN('40px'),
-        backgroundColor: '#524842',
-        color: '#ffffff',
-        borderRadius: pixelToRN('10px'),
-        textDecorationLine: 'none',
-      }),
-      newsletter: convertStyle({
-        flexDirection: 'column',
-        gap: pixelToRN('1rem'),
-        maxWidth: pixelToRN('300px'),
-      }),
-      newsletterForm: convertStyle({
-        flexDirection: 'row',
-        gap: pixelToRN('8px'),
-      }),
-      newsletterInput: convertStyle({
+      itemContent: convertStyle({
         flex: 1,
-        paddingVertical: pixelToRN('10px'),
-        paddingHorizontal: pixelToRN('14px'),
-        fontSize: pixelToRN('0.95rem'),
-        backgroundColor: '#524842',
-        borderWidth: 1,
-        borderColor: '#6b5d54',
-        borderRadius: pixelToRN('8px'),
-        color: '#ffffff',
+        marginLeft: 12,
       }),
-      newsletterButton: convertStyle({
-        paddingVertical: pixelToRN('10px'),
-        paddingHorizontal: pixelToRN('16px'),
-        backgroundColor: '#d63384',
-        color: '#ffffff',
-        borderWidth: 0,
-        borderRadius: pixelToRN('8px'),
-        fontSize: pixelToRN('0.95rem'),
+      itemTitle: convertStyle({
+        fontSize: 16,
         fontWeight: '500',
+        color: '#2a241f',
+        marginBottom: 2,
       }),
-      bottom: convertStyle({
-        borderTopWidth: 1,
-        borderTopColor: '#524842',
-        paddingVertical: pixelToRN('1.5rem'),
-        marginTop: pixelToRN('2rem'),
+      itemSubtitle: convertStyle({
+        fontSize: 14,
+        color: '#8b7d74',
       }),
-      bottomContent: convertStyle({
-        flexDirection: 'row',
-        justifyContent: 'space-between',
+      itemIcon: convertStyle({
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        backgroundColor: '#f7f6f4',
         alignItems: 'center',
-        maxWidth: pixelToRN('1200px'),
-        marginHorizontal: 'auto',
-        paddingHorizontal: pixelToRN('2rem'),
-        gap: pixelToRN('1rem'),
+        justifyContent: 'center',
       }),
-      copyright: convertStyle({
-        fontSize: pixelToRN('0.875rem'),
-        color: '#8b7d74',
-      }),
-      bottomNav: convertStyle({
-        flexDirection: 'row',
-        gap: pixelToRN('2rem'),
-      }),
-      bottomNavLink: convertStyle({
-        color: '#8b7d74',
-        textDecorationLine: 'none',
-        fontSize: pixelToRN('0.875rem'),
-      }),
-      mobile: convertStyle({
-        paddingVertical: pixelToRN('2rem'),
-        paddingBottom: pixelToRN('1rem'),
+      itemArrow: convertStyle({
+        width: 20,
+        height: 20,
+        color: '#b8aca4',
       }),
     },
     button: {
@@ -1285,13 +1080,6 @@ const stylesGlobal: StylesGlobal = {
         borderColor: '#e11d48',
       }),
     },
-    cssGlobals: {
-      // Animations not supported in React Native, included for reference
-      fadeInUp: '',
-      videoCarousel: '',
-      playOverlay: '',
-      lightbox: '',
-    },
   },
 
   // ===============================
@@ -1300,13 +1088,12 @@ const stylesGlobal: StylesGlobal = {
   utils: {
     container: {
       center: true,
-      padding: pixelToRN('1rem'),
+      padding: 16,
       maxWidth: {
-        sm: pixelToRN('640px'),
-        md: pixelToRN('768px'),
-        lg: pixelToRN('1024px'),
-        xl: pixelToRN('1280px'),
-        '2xl': pixelToRN('1400px'),
+        sm: 375,  // iPhone estándar
+        md: 414,  // iPhone Plus
+        lg: 768,  // iPad portrait
+        xl: 1024, // iPad landscape
       },
     },
     zIndex: {
@@ -1326,7 +1113,7 @@ const stylesGlobal: StylesGlobal = {
     },
     overlay: {
       base: convertStyle({
-        position: 'fixed',
+        position: 'absolute',
         top: 0,
         left: 0,
         width: '100%',
@@ -1335,10 +1122,40 @@ const stylesGlobal: StylesGlobal = {
         zIndex: 1300,
       }),
       elegant: convertStyle({
-        backgroundColor: 'rgba(42, 36, 31, 0.8)', // Gradients not supported
+        backgroundColor: 'rgba(42, 36, 31, 0.8)',
       }),
-      blur: convertStyle({
-      }),
+    },
+    // Utilidades específicas para móvil
+    mobile: {
+      safeArea: {
+        // Safe areas típicas para diferentes dispositivos
+        iPhoneX: { top: 44, bottom: 34 },
+        iPhone: { top: 20, bottom: 0 },
+        android: { top: 24, bottom: 0 },
+      },
+      orientation: {
+        isPortrait: height > width,
+        isLandscape: width > height,
+      },
+      screen: {
+        width,
+        height,
+        isSmall: width < 375,
+        isMedium: width >= 375 && width < 414,
+        isLarge: width >= 414,
+        isTablet: width >= 768,
+      },
+      touch: {
+        // Tamaños mínimos para elementos táctiles
+        minSize: 44,
+        comfortable: 48,
+        large: 56,
+      },
+      keyboardAware: {
+        // Espacios para teclado
+        bottomPadding: 20,
+        inputMargin: 16,
+      },
     },
     migration: {
       colorMapping: {
@@ -1356,21 +1173,20 @@ const stylesGlobal: StylesGlobal = {
         '#64748B': '#b8aca4',
       },
       componentMapping: {
-        oldNavbarAdmin: 'stylesGlobal.components.navbar.variants.dark',
-        oldNavbarColors: 'stylesGlobal.colors.surface.elevated',
-        oldSidebarAdmin: 'stylesGlobal.components.sidebar.variants.dark',
-        oldSidebarColors: 'stylesGlobal.colors.neutral[900]',
-        oldFooter: 'stylesGlobal.components.footer.variants.luxury',
-        oldFooterColors: 'stylesGlobal.colors.neutral[900]',
-        oldNavbarBase: 'stylesGlobal.components.navbar.base',
-        oldNavbarPublic: 'stylesGlobal.components.navbar.variants.solid',
+        oldNavbar: 'stylesGlobal.components.header',
+        oldSidebar: 'deprecated - use drawer navigation',
+        oldFooter: 'deprecated - not used in mobile',
+        oldButton: 'stylesGlobal.components.button',
+        oldCard: 'stylesGlobal.components.card',
+        oldInput: 'stylesGlobal.components.input',
       },
       transitionGuide: {
-        step1: 'Reemplazar imports de colors antiguos con stylesGlobal',
-        step2: 'Migrar estilos inline a sistema de componentes global',
-        step3: 'Actualizar animaciones a cubic-bezier elegante',
-        step4: 'Implementar variantes glass y luxury donde corresponda',
-        step5: 'Unificar sistema de espaciado con spacing.scale',
+        step1: 'Reemplazar componentes web con componentes móviles',
+        step2: 'Usar header en lugar de navbar',
+        step3: 'Implementar tab navigation en lugar de sidebar',
+        step4: 'Ajustar espaciado para pantallas táctiles',
+        step5: 'Agregar safe area handling',
+        step6: 'Implementar responsive design para móvil',
       },
     },
     legacy: {
@@ -1398,79 +1214,47 @@ const stylesGlobal: StylesGlobal = {
   },
 };
 
-// Create React Native StyleSheet
+// Create React Native StyleSheet optimizado para móvil
 const globalStyles = StyleSheet.create({
-  // Flatten styles for React Native components
-  navbarBase: stylesGlobal.components.navbar.base,
-  navbarTransparent: stylesGlobal.components.navbar.variants.transparent,
-  navbarSolid: stylesGlobal.components.navbar.variants.solid,
-  navbarLuxury: stylesGlobal.components.navbar.variants.luxury,
-  navbarDark: stylesGlobal.components.navbar.variants.dark,
-  navbarScrolled: stylesGlobal.components.navbar.scrolled,
-  navbarBrand: stylesGlobal.components.navbar.brand,
-  navbarNav: stylesGlobal.components.navbar.nav,
-  navbarNavItem: stylesGlobal.components.navbar.navItem,
-  navbarNavLink: stylesGlobal.components.navbar.navLink,
-  navbarActions: stylesGlobal.components.navbar.actions,
-  navbarMobile: stylesGlobal.components.navbar.mobile,
-  navbarMobileMenu: stylesGlobal.components.navbar.mobileMenu,
-  navbarHamburger: stylesGlobal.components.navbar.hamburger,
-  navbarHamburgerLine: stylesGlobal.components.navbar.hamburgerLine,
+  // Header móvil
+  headerBase: stylesGlobal.components.header.base,
+  headerTransparent: stylesGlobal.components.header.variants.transparent,
+  headerPrimary: stylesGlobal.components.header.variants.primary,
+  headerDark: stylesGlobal.components.header.variants.dark,
+  headerTitle: stylesGlobal.components.header.title,
+  headerBackButton: stylesGlobal.components.header.backButton,
+  headerRightAction: stylesGlobal.components.header.rightAction,
 
-  sidebarBase: stylesGlobal.components.sidebar.base,
-  sidebarLuxury: stylesGlobal.components.sidebar.variants.luxury,
-  sidebarDark: stylesGlobal.components.sidebar.variants.dark,
-  sidebarGlass: stylesGlobal.components.sidebar.variants.glass,
-  sidebarMinimal: stylesGlobal.components.sidebar.variants.minimal,
-  sidebarCollapsed: stylesGlobal.components.sidebar.collapsed,
-  sidebarHeader: stylesGlobal.components.sidebar.header,
-  sidebarLogo: stylesGlobal.components.sidebar.logo,
-  sidebarLogoIcon: stylesGlobal.components.sidebar.logoIcon,
-  sidebarLogoText: stylesGlobal.components.sidebar.logoText,
-  sidebarContent: stylesGlobal.components.sidebar.content,
-  sidebarNav: stylesGlobal.components.sidebar.nav,
-  sidebarNavItem: stylesGlobal.components.sidebar.navItem,
-  sidebarNavLink: stylesGlobal.components.sidebar.navLink,
-  sidebarNavIcon: stylesGlobal.components.sidebar.navIcon,
-  sidebarNavText: stylesGlobal.components.sidebar.navText,
-  sidebarSection: stylesGlobal.components.sidebar.section,
-  sidebarSectionTitle: stylesGlobal.components.sidebar.sectionTitle,
-  sidebarFooter: stylesGlobal.components.sidebar.footer,
-  sidebarToggle: stylesGlobal.components.sidebar.toggle,
-  sidebarOverlay: stylesGlobal.components.sidebar.overlay,
+  // Tab Bar
+  tabBarBase: stylesGlobal.components.tabBar.base,
+  tabBarTab: stylesGlobal.components.tabBar.tab,
+  tabBarTabIcon: stylesGlobal.components.tabBar.tabIcon,
+  tabBarTabLabel: stylesGlobal.components.tabBar.tabLabel,
+  tabBarTabActive: stylesGlobal.components.tabBar.tabActive,
 
-  footerBase: stylesGlobal.components.footer.base,
-  footerSimple: stylesGlobal.components.footer.variants.simple,
-  footerComplex: stylesGlobal.components.footer.variants.complex,
-  footerLuxury: stylesGlobal.components.footer.variants.luxury,
-  footerMinimal: stylesGlobal.components.footer.variants.minimal,
-  footerMain: stylesGlobal.components.footer.main,
-  footerGrid: stylesGlobal.components.footer.grid,
-  footerSection: stylesGlobal.components.footer.section,
-  footerBrand: stylesGlobal.components.footer.brand,
-  footerLogo: stylesGlobal.components.footer.logo,
-  footerLogoIcon: stylesGlobal.components.footer.logoIcon,
-  footerLogoText: stylesGlobal.components.footer.logoText,
-  footerDescription: stylesGlobal.components.footer.description,
-  footerTitle: stylesGlobal.components.footer.title,
-  footerNav: stylesGlobal.components.footer.nav,
-  footerNavLink: stylesGlobal.components.footer.navLink,
-  footerContact: stylesGlobal.components.footer.contact,
-  footerContactItem: stylesGlobal.components.footer.contactItem,
-  footerContactIcon: stylesGlobal.components.footer.contactIcon,
-  footerSocial: stylesGlobal.components.footer.social,
-  footerSocialLink: stylesGlobal.components.footer.socialLink,
-  footerNewsletter: stylesGlobal.components.footer.newsletter,
-  footerNewsletterForm: stylesGlobal.components.footer.newsletterForm,
-  footerNewsletterInput: stylesGlobal.components.footer.newsletterInput,
-  footerNewsletterButton: stylesGlobal.components.footer.newsletterButton,
-  footerBottom: stylesGlobal.components.footer.bottom,
-  footerBottomContent: stylesGlobal.components.footer.bottomContent,
-  footerCopyright: stylesGlobal.components.footer.copyright,
-  footerBottomNav: stylesGlobal.components.footer.bottomNav,
-  footerBottomNavLink: stylesGlobal.components.footer.bottomNavLink,
-  footerMobile: stylesGlobal.components.footer.mobile,
+  // Screen
+  screenBase: stylesGlobal.components.screen.base,
+  screenContent: stylesGlobal.components.screen.content,
+  screenCentered: stylesGlobal.components.screen.centered,
 
+  // Modal
+  modalBase: stylesGlobal.components.modal.base,
+  modalContent: stylesGlobal.components.modal.content,
+  modalHeader: stylesGlobal.components.modal.header,
+  modalTitle: stylesGlobal.components.modal.title,
+  modalCloseButton: stylesGlobal.components.modal.closeButton,
+
+  // Lista
+  listContainer: stylesGlobal.components.list.container,
+  listItem: stylesGlobal.components.list.item,
+  listItemLast: stylesGlobal.components.list.itemLast,
+  listItemContent: stylesGlobal.components.list.itemContent,
+  listItemTitle: stylesGlobal.components.list.itemTitle,
+  listItemSubtitle: stylesGlobal.components.list.itemSubtitle,
+  listItemIcon: stylesGlobal.components.list.itemIcon,
+  listItemArrow: stylesGlobal.components.list.itemArrow,
+
+  // Botones
   buttonXs: stylesGlobal.components.button.sizes.xs,
   buttonSm: stylesGlobal.components.button.sizes.sm,
   buttonBase: stylesGlobal.components.button.sizes.base,
@@ -1481,15 +1265,66 @@ const globalStyles = StyleSheet.create({
   buttonLuxury: stylesGlobal.components.button.variants.luxury,
   buttonGhost: stylesGlobal.components.button.variants.ghost,
 
+  // Cards
   cardBase: stylesGlobal.components.card.base,
   cardElevated: stylesGlobal.components.card.elevated,
   cardLuxury: stylesGlobal.components.card.luxury,
   cardInteractive: stylesGlobal.components.card.interactive,
 
+  // Inputs
   inputBase: stylesGlobal.components.input.base,
   inputLuxury: stylesGlobal.components.input.luxury,
   inputError: stylesGlobal.components.input.error,
 });
 
-export { globalStyles, stylesGlobal };
+// ===============================
+// HELPERS ESPECÍFICOS PARA MÓVIL
+// ===============================
+
+// Helper para obtener estilos responsivos basados en el tamaño de pantalla
+const getResponsiveStyle = (styles: { small?: any; medium?: any; large?: any; tablet?: any }) => {
+  if (isLargeScreen || width >= 768) return styles.tablet || styles.large || styles.medium || styles.small;
+  if (isMediumScreen) return styles.large || styles.medium || styles.small;
+  return styles.small || styles.medium;
+};
+
+// Helper para safe area
+const getSafeAreaInsets = () => {
+  // En una implementación real, esto vendría de react-native-safe-area-context
+  if (height >= 812) { // iPhone X y posteriores
+    return { top: 44, bottom: 34, left: 0, right: 0 };
+  }
+  return { top: 20, bottom: 0, left: 0, right: 0 };
+};
+
+// Helper para espaciado dinámico
+const getDynamicSpacing = (baseSpacing: number) => {
+  const scale = isSmallScreen ? 0.8 : isLargeScreen ? 1.2 : 1;
+  return Math.round(baseSpacing * scale);
+};
+
+// Helper para tamaños de fuente dinámicos
+const getDynamicFontSize = (baseFontSize: number) => {
+  const scale = isSmallScreen ? 0.9 : isLargeScreen ? 1.1 : 1;
+  return Math.round(baseFontSize * scale);
+};
+
+// Export helpers
+const mobileHelpers = {
+  getResponsiveStyle,
+  getSafeAreaInsets,
+  getDynamicSpacing,
+  getDynamicFontSize,
+  screen: {
+    width,
+    height,
+    isSmallScreen,
+    isMediumScreen,
+    isLargeScreen,
+    isPortrait: height > width,
+    isLandscape: width > height,
+  },
+};
+
+export { globalStyles, mobileHelpers, stylesGlobal };
 
