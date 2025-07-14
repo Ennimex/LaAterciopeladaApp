@@ -36,7 +36,7 @@ export default function LoginScreen() {
       const result = await login({ email: email.trim(), password });
       
       if (result.success) {
-        router.replace('/(tabs)');
+        router.replace('/InicioScreen');
       } else {
         setError(result.message || 'Error al iniciar sesión');
       }

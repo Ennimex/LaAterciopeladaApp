@@ -20,6 +20,9 @@ const MAPPING = {
   'chevron.right': 'chevron-right',
   'heart.fill': 'favorite',
   'bag.fill': 'shopping-bag',
+  'wrench.and.screwdriver': 'shopping-bag',
+  'star.fill': 'star',
+  'photo.on.rectangle': 'photo',
 } as IconMapping;
 
 /**

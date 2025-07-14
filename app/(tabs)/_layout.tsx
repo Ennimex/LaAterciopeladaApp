@@ -12,24 +12,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Inicio',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="InicioScreen"
-        options={{
           title: 'La Aterciopelada',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="heart.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="api-demo"
-        options={{
-          title: 'API Demo',
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="wrench.and.screwdriver" color={color} />
-          ),
         }}
       />
       <Tabs.Screen
@@ -38,6 +22,24 @@ export default function TabLayout() {
           title: 'Productos',
           tabBarIcon: ({ color }) => (
             <IconSymbol size={28} name="wrench.and.screwdriver" color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="ServiciosScreen"
+        options={{
+          title: 'Servicios',
+          tabBarIcon: ({ color }) => (
+            <IconSymbol size={28} name="star.fill" color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="GaleriaScareen"
+        options={{
+          title: 'Galería',
+          tabBarIcon: ({ color }) => (
+            <IconSymbol size={28} name="photo.on.rectangle" color={color} />
           ),
         }}
       />

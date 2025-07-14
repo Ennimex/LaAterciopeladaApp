@@ -1,20 +1,20 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
+import { useRoute } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Dimensions,
-    FlatList,
-    Image,
-    Modal,
-    RefreshControl,
-    ScrollView,
-    Switch,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  FlatList,
+  Image,
+  Modal,
+  RefreshControl,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { publicAPI } from '../../services/api';
@@ -63,6 +63,11 @@ interface CategoriaData {
 const { width } = Dimensions.get('window');
 
 const ProductosScreen: React.FC = () => {
+  // Estado para controlar si se presionó el botón de buscar
+  const [searchTriggered, setSearchTriggered] = useState(false);
+  // Leer parámetro de navegación
+  const route = useRoute();
+  const localidadParam = (route.params && (route.params as any).localidad) || null;
   // States
   const [productos, setProductos] = useState<ProductoData[]>([]);
   const [categorias, setCategorias] = useState<CategoriaData[]>([]); // Solo para mostrar nombre en modal
@@ -112,15 +117,74 @@ const ProductosScreen: React.FC = () => {
     return Array.from(locs.entries()).filter(([id, nombre]) => id && nombre);
   }, [productos]);
 
-  // Load initial data
+
+  // Cargar productos y aplicar filtro de localidad si viene por navegación
   useEffect(() => {
     loadInitialData();
   }, []);
 
-  // Filter products when search o cualquier filtro cambia
+  // Si viene parámetro de localidad, aplicar filtro automáticamente al montar
   useEffect(() => {
-    filterProductos();
-  }, [searchQuery, productos, selectedTalla, selectedLocalidad, soloDisponibles]);
+    if (localidadParam && productos.length > 0) {
+      // Buscar el id de la localidad en los productos
+      const localidadId = (() => {
+        // Buscar por nombre en los productos
+        for (const p of productos) {
+          if (typeof p.localidadId === 'string' && p.localidad?.nombre === localidadParam) {
+            return p.localidadId;
+          } else if (p.localidadId && typeof p.localidadId === 'object' && p.localidadId.nombre === localidadParam) {
+            return p.localidadId._id;
+          }
+        }
+        return null;
+      })();
+      if (localidadId) {
+        setSelectedLocalidad(localidadId);
+      }
+    }
+  }, [localidadParam, productos]);
+
+  // Filtrar productos cuando cambian los filtros (excepto búsqueda por texto)
+  useEffect(() => {
+    // Filtrar sin considerar el texto de búsqueda
+    let filtered = productos;
+
+    // Filtrar por talla
+    if (selectedTalla) {
+      filtered = filtered.filter(producto => {
+        if (producto.tallasDisponibles && Array.isArray(producto.tallasDisponibles)) {
+          return producto.tallasDisponibles.some(t =>
+            typeof t === 'string' ? t === selectedTalla : t.talla === selectedTalla
+          );
+        }
+        if (producto.tallas && Array.isArray(producto.tallas)) {
+          return producto.tallas.some(t => t.talla === selectedTalla);
+        }
+        return false;
+      });
+    }
+
+    // Filtrar por localidad
+    if (selectedLocalidad) {
+      filtered = filtered.filter(producto => {
+        if (typeof producto.localidadId === 'string') {
+          return producto.localidadId === selectedLocalidad;
+        } else if (producto.localidadId && typeof producto.localidadId === 'object') {
+          return producto.localidadId._id === selectedLocalidad;
+        }
+        return false;
+      });
+    }
+
+    // Filtrar solo disponibles
+    if (soloDisponibles) {
+      filtered = filtered.filter(producto => producto.disponible !== false);
+    }
+
+    // No filtrar por búsqueda de texto aquí
+    setFilteredProductos(filtered);
+    setSearchTriggered(false); // Reiniciar trigger al cambiar filtros
+  }, [productos, selectedTalla, selectedLocalidad, soloDisponibles]);
 
   const loadInitialData = async () => {
     try {
@@ -146,8 +210,28 @@ const ProductosScreen: React.FC = () => {
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await loadInitialData();
+    // Si hay parámetro de localidad, volver a aplicar el filtro
+    if (localidadParam && productos.length > 0) {
+      // Buscar el id de la localidad en los productos
+      const localidadId = (() => {
+        for (const p of productos) {
+          if (typeof p.localidadId === 'string' && p.localidad?.nombre === localidadParam) {
+            return p.localidadId;
+          } else if (p.localidadId && typeof p.localidadId === 'object' && p.localidadId.nombre === localidadParam) {
+            return p.localidadId._id;
+          }
+        }
+        return null;
+      })();
+      if (localidadId) {
+        setSelectedLocalidad(localidadId);
+      }
+    } else {
+      // Si no hay parámetro, quitar filtro
+      setSelectedLocalidad(null);
+    }
     setRefreshing(false);
-  }, []);
+  }, [localidadParam, productos]);
 
   const filterProductos = () => {
     let filtered = productos;
@@ -187,14 +271,13 @@ const ProductosScreen: React.FC = () => {
       filtered = filtered.filter(producto => producto.disponible !== false);
     }
 
-    // Filtrar por búsqueda de texto
-    if (searchQuery.trim()) {
+    // Filtrar por búsqueda de texto SOLO si se ha solicitado (por botón)
+    if (searchQuery.trim() && searchTriggered) {
       filtered = filtered.filter(producto =>
         producto.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
         producto.descripcion?.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
-
     setFilteredProductos(filtered);
   };
 
@@ -549,7 +632,7 @@ const ProductosScreen: React.FC = () => {
 return (
   <SafeAreaView style={globalStyles.screenBase}>
     <>
-      <View style={{ padding: stylesGlobal.spacing.scale[4] }}>
+      <View style={{ padding: stylesGlobal.spacing.scale[4], marginTop: stylesGlobal.spacing.scale[1] }}>
         <Text
           style={[
             globalStyles.headerTitle,
@@ -570,31 +653,64 @@ return (
                 : stylesGlobal.colors.surface.secondary[500],
               borderRadius: parseInt(stylesGlobal.borders.radius.md),
               paddingHorizontal: stylesGlobal.spacing.scale[3],
+              paddingVertical: stylesGlobal.spacing.scale[4],
               marginBottom: stylesGlobal.spacing.scale[2],
+              minHeight: 48,
             }}
           >
-            <Ionicons
-              name="search"
-              size={20}
-              color={typeof stylesGlobal.colors.text.muted === 'string' ? stylesGlobal.colors.text.muted : '#b8aca4'}
-            />
             <TextInput
               style={[
                 globalStyles.inputBase,
                 {
                   flex: 1,
-                  marginLeft: stylesGlobal.spacing.scale[2],
-                  paddingVertical: stylesGlobal.spacing.scale[3],
+                  marginLeft: 0,
+                  paddingVertical: stylesGlobal.spacing.scale[2],
                   color: stylesGlobal.colors.text.primary,
+                  fontSize: 17,
+                  fontWeight: '500',
+                  letterSpacing: 0.2,
+                  minHeight: 36,
+                  backgroundColor: 'transparent',
                 },
               ]}
               placeholder="Buscar productos..."
-              placeholderTextColor={typeof stylesGlobal.colors.text.muted === 'string' ? stylesGlobal.colors.text.muted : '#b8aca4'}
+              placeholderTextColor={typeof stylesGlobal.colors.text.primary === 'string' ? stylesGlobal.colors.text.primary : '#222'}
               value={searchQuery}
-              onChangeText={setSearchQuery}
+              onChangeText={text => {
+                setSearchQuery(text);
+                setSearchTriggered(false);
+              }}
+              autoCorrect={false}
+              autoCapitalize="none"
+              clearButtonMode="while-editing"
+              returnKeyType="done"
+              onSubmitEditing={() => {}}
             />
+            <TouchableOpacity
+              onPress={() => {
+                setSearchTriggered(true);
+                filterProductos();
+              }}
+              style={{
+                marginLeft: stylesGlobal.spacing.scale[2],
+                backgroundColor: typeof stylesGlobal.colors.primary === 'string'
+                  ? stylesGlobal.colors.primary
+                  : (stylesGlobal.colors.primary[500] as string),
+                borderRadius: parseInt(stylesGlobal.borders.radius.sm),
+                padding: 8,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+              accessibilityLabel="Buscar"
+            >
+              <Ionicons
+                name="search"
+                size={20}
+                color="#fff"
+              />
+            </TouchableOpacity>
             {searchQuery.length > 0 && (
-              <TouchableOpacity onPress={() => setSearchQuery('')}>
+              <TouchableOpacity onPress={() => setSearchQuery('')} style={{ marginLeft: stylesGlobal.spacing.scale[1] }}>
                 <Ionicons
                   name="close-circle"
                   size={20}
@@ -623,7 +739,7 @@ return (
               <Text style={[globalStyles.listItemTitle, { marginLeft: stylesGlobal.spacing.scale[2] }]}>Filtros</Text>
             </TouchableOpacity>
             {showFilters && (
-              <View style={{ marginTop: stylesGlobal.spacing.scale[2] }}>
+              <View style={{ marginTop: stylesGlobal.spacing.scale[6], padding: 24 }}>
                 {/* Filtro de talla */}
                 <Text style={{
                   fontSize: 18,
@@ -631,15 +747,15 @@ return (
                   color: typeof stylesGlobal.colors.text.primary === 'string'
                     ? stylesGlobal.colors.text.primary
                     : (stylesGlobal.colors.text.primary[500] as string) || '#000',
-                  marginBottom: 6,
-                  marginTop: 8,
+                  marginBottom: 24,
+                  marginTop: 18,
                 }}>
                   Filtrar por Talla
                 </Text>
                 <Picker
                   selectedValue={selectedTalla ?? undefined}
                   onValueChange={(value: string) => setSelectedTalla(value === '' ? null : value)}
-                  style={{ height: 40, marginBottom: stylesGlobal.spacing.scale[2] }}
+                  style={{ height: 52, marginBottom: 36 }}
                 >
                   <Picker.Item label="Todas las tallas" value="" />
                   {tallasUnicas.map(talla => (
@@ -654,15 +770,15 @@ return (
                   color: typeof stylesGlobal.colors.text.primary === 'string'
                     ? stylesGlobal.colors.text.primary
                     : (stylesGlobal.colors.text.primary[500] as string) || '#000',
-                  marginBottom: 6,
-                  marginTop: 8,
+                  marginBottom: 24,
+                  marginTop: 28,
                 }}>
                   Filtrar por Localidad
                 </Text>
                 <Picker
                   selectedValue={selectedLocalidad ?? undefined}
                   onValueChange={(value: string) => setSelectedLocalidad(value === '' ? null : value)}
-                  style={{ height: 40, marginBottom: stylesGlobal.spacing.scale[2] }}
+                  style={{ height: 52, marginBottom: 36 }}
                 >
                   <Picker.Item label="Todas las localidades" value="" />
                   {localidadesUnicas.map(([id, nombre]) => (
@@ -670,51 +786,26 @@ return (
                   ))}
                 </Picker>
 
-                {/* Filtro de disponibilidad */}
-                <Text style={{
-                  fontSize: 18,
-                  fontWeight: 'bold',
-                  color: typeof stylesGlobal.colors.text.primary === 'string'
-                    ? stylesGlobal.colors.text.primary
-                    : (stylesGlobal.colors.text.primary[500] as string) || '#000',
-                  marginBottom: 6,
-                  marginTop: 8,
-                }}>
-                  Filtrar por Disponibilidad
-                </Text>
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: stylesGlobal.spacing.scale[2] }}>
-                  <Text style={{
-                    fontSize: 16,
-                    color: typeof stylesGlobal.colors.text.primary === 'string'
-                      ? stylesGlobal.colors.text.primary
-                      : (stylesGlobal.colors.text.primary[500] as string) || '#000',
-                    marginRight: 8,
-                  }}>
-                    Solo mostrar disponibles
-                  </Text>
-                  <Switch
-                    value={soloDisponibles}
-                    onValueChange={setSoloDisponibles}
-                    thumbColor={
-                      soloDisponibles
-                        ? (typeof stylesGlobal.colors.primary === 'string'
-                            ? stylesGlobal.colors.primary
-                            : (stylesGlobal.colors.primary[500] as string))
-                        : '#ccc'
-                    }
-                    trackColor={{
-                      false: '#ccc',
-                      true:
-                        typeof stylesGlobal.colors.primary === 'string'
-                          ? stylesGlobal.colors.primary
-                          : (stylesGlobal.colors.primary[200] as string) || '#aaf'
-                    }}
-                  />
-                </View>
+                {/* Filtro de disponibilidad eliminado por solicitud */}
               </View>
             )}
           </View>
         </View>
+        {/* Botón para quitar filtro de localidad si está activo por navegación */}
+        {localidadParam && selectedLocalidad && (
+          <TouchableOpacity
+            style={{
+              backgroundColor: typeof stylesGlobal.colors.secondary === 'string' ? stylesGlobal.colors.secondary : (stylesGlobal.colors.secondary[500] as string),
+              padding: 10,
+              borderRadius: 8,
+              marginBottom: 12,
+              alignSelf: 'flex-start',
+            }}
+            onPress={() => setSelectedLocalidad(null)}
+          >
+            <Text style={{ color: '#fff', fontWeight: 'bold' }}>Quitar filtro de localidad</Text>
+          </TouchableOpacity>
+        )}
 
         <FlatList
           data={filteredProductos}
@@ -754,7 +845,7 @@ return (
               </Text>
             </View>
           }
-          contentContainerStyle={{ paddingBottom: stylesGlobal.spacing.scale[8] }}
+          contentContainerStyle={{ paddingBottom: stylesGlobal.spacing.scale[24] }}
         />
       </View>
 
