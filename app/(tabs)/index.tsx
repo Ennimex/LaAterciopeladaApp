@@ -39,47 +39,59 @@ const index = () => {
   // Usar el contexto de autenticación real
   const { user, isAuthenticated } = useAuth();
 
-  // Función para obtener icono de localidad (simplificada para móvil)
-  const getLocalidadIcon = (nombre: string) => {
-    const iconos: { [key: string]: string } = {
-      Centro: "🏛️",
-      Norte: "🌲",
-      Sur: "🏖️",
-      Este: "🌅",
-      Oeste: "🌇"
-    };
-    return iconos[nombre] || "📍";
+  // Conjunto de iconos disponibles por tipo
+  const iconosDisponibles = {
+    localidades: ["🏛️", "🌆", "🏙️", "🌃", "🌉", "🌄", "🌅", "🌇", "🏰", "⛪", "🕌", "🕍", "🏢", "🏣", "🏤", "🏥", "🏦", "🏨", "🏪", "🏫"],
+    categorias: {
+      negocios: ["🏢", "🏣", "🏤", "🏥", "🏦", "🏪", "🏫", "🏬", "🏭", "🏯", "🏰"],
+      comida: ["🍽️", "🍴", "🍳", "🥘", "🥗", "🍕", "🌮", "🥪", "🍜", "🍱", "🍲"],
+      entretenimiento: ["🎭", "🎨", "🎪", "🎬", "🎮", "🎯", "🎲", "🎸", "🎹", "🎷", "🎺"],
+      deportes: ["⚽", "🏀", "🏈", "⚾", "🎾", "🏐", "🏉", "🎱", "🏓", "🏸", "🏊"],
+      servicios: ["⚙️", "🔧", "🔨", "🛠️", "💻", "📱", "💡", "🔌", "📡", "🛂", "🔑"],
+      compras: ["🛍️", "🛒", "👕", "👗", "👔", "👠", "👜", "💎", "�", "📦", "🏷️"],
+      salud: ["⚕️", "💊", "�", "🩺", "🔬", "🧬", "🦷", "👨‍⚕️", "🧪", "🩹", "💉"],
+      belleza: ["💄", "💅", "💇", "💈", "👗", "👠", "💃", "�", "💆", "👄", "💋"],
+      educacion: ["📚", "✏️", "📝", "🎓", "🏫", "📖", "🔬", "🎨", "🎵", "📐", "🗣️"],
+      otros: ["🌟", "✨", "💫", "⭐", "🔆", "📍", "🎯", "🎪", "🎨", "🎭", "�"]
+    }
   };
 
-  // Función para obtener icono de categoría
+  // Función para obtener un icono aleatorio de un array
+  const getRandomIcon = (iconos: string[]) => {
+    return iconos[Math.floor(Math.random() * iconos.length)];
+  };
+
+  // Función para obtener icono de localidad
+  const getLocalidadIcon = (nombre: string) => {
+    return getRandomIcon(iconosDisponibles.localidades);
+  };
+
+  // Función para obtener icono de categoría basado en palabras clave
   const getCategoriaIcon = (nombre: string) => {
-    const iconos: { [key: string]: string } = {
-      Restaurantes: "🍽️",
-      Comida: "🍽️",
-      Alimentación: "🍽️",
-      Entretenimiento: "🎭",
-      Diversión: "🎭",
-      Espectáculos: "🎭",
-      Servicios: "⚙️",
-      "Servicios Profesionales": "⚙️",
-      Tecnología: "💻",
-      Compras: "🛍️",
-      Tiendas: "🛍️",
-      Comercio: "🛍️",
-      Salud: "🏥",
-      Medicina: "🏥",
-      Belleza: "💄",
-      Estética: "💄",
-      Educación: "📚",
-      Formación: "📚",
-      Deportes: "⚽",
-      Fitness: "💪",
-      Turismo: "✈️",
-      Viajes: "✈️",
-      Hogar: "🏠",
-      Decoración: "🛋️"
-    };
-    return iconos[nombre] || "🏢";
+    const nombreLower = nombre.toLowerCase();
+    let categoria: keyof typeof iconosDisponibles.categorias = 'otros';
+
+    if (nombreLower.match(/restaurant|comida|aliment|café|bar|pizza|taco|sushi/)) {
+      categoria = 'comida';
+    } else if (nombreLower.match(/entreten|divers|espectác|teatro|cine|juego/)) {
+      categoria = 'entretenimiento';
+    } else if (nombreLower.match(/deport|fitness|gym|ejercicio|futbol|tenis/)) {
+      categoria = 'deportes';
+    } else if (nombreLower.match(/servicio|profesional|técnico|reparación/)) {
+      categoria = 'servicios';
+    } else if (nombreLower.match(/compra|tienda|ropa|calzado|mercado|comercio/)) {
+      categoria = 'compras';
+    } else if (nombreLower.match(/salud|médico|hospital|clínica|consultorio/)) {
+      categoria = 'salud';
+    } else if (nombreLower.match(/belleza|estética|spa|peluquer|manicur/)) {
+      categoria = 'belleza';
+    } else if (nombreLower.match(/educación|escuela|curso|academia|universidad/)) {
+      categoria = 'educacion';
+    } else if (nombreLower.match(/negocio|empresa|corporativ|oficina/)) {
+      categoria = 'negocios';
+    }
+
+    return getRandomIcon(iconosDisponibles.categorias[categoria]);
   };
 
   // Cargar datos iniciales
@@ -115,66 +127,25 @@ const index = () => {
           localidadesConEmpresas = localidadesResponse.map(
             (localidad: any) => ({
               ...localidad,
-              id: localidad._id || localidad.id, // MongoDB usa _id
-              empresas: Math.floor(Math.random() * 50) + 10 // Mock del conteo de empresas por ahora
+              id: localidad._id || localidad.id // MongoDB usa _id
             })
           );
         } else {
           throw new Error("Estructura de datos inválida");
         }
       } catch (localidadesError) {
-        // Usar datos mock si falla la API de localidades
-        localidadesConEmpresas = [
-          {
-            id: 1,
-            nombre: "Centro",
-            descripcion: "Zona céntrica de la ciudad",
-            empresas: 45
-          },
-          {
-            id: 2,
-            nombre: "Norte",
-            descripcion: "Zona norte de la ciudad",
-            empresas: 32
-          },
-          {
-            id: 3,
-            nombre: "Sur",
-            descripcion: "Zona sur de la ciudad",
-            empresas: 28
-          },
-          {
-            id: 4,
-            nombre: "Este",
-            descripcion: "Zona este de la ciudad",
-            empresas: 18
-          },
-          {
-            id: 5,
-            nombre: "Oeste",
-            descripcion: "Zona oeste de la ciudad",
-            empresas: 25
-          }
-        ];
+        console.error("Error al cargar localidades:", localidadesError);
+        localidadesConEmpresas = [];
       }
 
-      // Mock comentarios hasta tener endpoint real
-      const mockComentarios = [
-        {
-          id: 1,
-          texto: "Excelente plataforma para encontrar servicios locales",
-          usuario: "María García",
-          fecha: "2025-01-08",
-          rating: 5
-        },
-        {
-          id: 2,
-          texto: "Muy útil para descubrir nuevos lugares en la ciudad",
-          usuario: "Carlos López",
-          fecha: "2025-01-07",
-          rating: 4
-        }
-      ];
+      // Inicializar array de comentarios vacío
+      const mockComentarios: Array<{
+        id: number;
+        texto: string;
+        usuario: string;
+        fecha: string;
+        rating: number;
+      }> = [];
 
       setCategorias(categoriasConImagenes);
       setLocalidades(localidadesConEmpresas);
@@ -238,26 +209,16 @@ const index = () => {
     }
 
     try {
-      // TODO: Implementar endpoint real para comentarios
-      // const response = await publicAPI.createComentario({
-      //   texto: comentarioTexto,
-      //   usuarioId: user?.id
-      // });
+      if (!user?.id) {
+        throw new Error("Usuario no identificado");
+      }
 
-      // Mock envío de comentario
-      const nuevoComentario = {
-        id: Date.now(),
-        texto: comentarioTexto,
-        usuario: user?.name || user?.email || "Usuario",
-        fecha: new Date().toISOString().split("T")[0],
-        rating: 5
-      };
-
-      setComentarios((prev) => [nuevoComentario, ...prev]);
+      // En este punto deberías implementar la llamada real a tu API
+      Alert.alert("Información", "Función en desarrollo");
       setComentarioTexto("");
-      Alert.alert("Éxito", "Comentario enviado correctamente");
-    } catch (error) {
-      Alert.alert("Error", "No se pudo enviar el comentario");
+      
+    } catch (error: any) {
+      Alert.alert("Error", error.message || "No se pudo enviar el comentario");
     }
   };
 
@@ -289,8 +250,8 @@ const index = () => {
       );
     } catch (error: any) {
       Alert.alert(
-        "Explorar Servicios",
-        "Descubre todos los servicios disponibles en La Aterciopelada",
+        "Error",
+        "No se pudieron cargar los servicios. Por favor, intenta más tarde.",
         [{ text: "OK", onPress: () => {} }]
       );
     }
@@ -549,13 +510,12 @@ const index = () => {
               >
                 {getLocalidadIcon(localidad.nombre)}
               </Text>
-              <View style={{ flex: 1 }}>
+              <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Text
                   style={{
                     fontSize: stylesGlobal.typography.scale.base,
                     fontWeight: stylesGlobal.typography.weights.semibold as any,
-                    color: stylesGlobal.colors.text.primary as string,
-                    marginBottom: stylesGlobal.spacing.scale[1]
+                    color: stylesGlobal.colors.text.primary as string
                   }}
                 >
                   {localidad.nombre}
@@ -566,7 +526,7 @@ const index = () => {
                     color: stylesGlobal.colors.text.secondary as string
                   }}
                 >
-                  {localidad.empresas} empresas disponibles
+                  {localidad.empresas}
                 </Text>
               </View>
               <Text
