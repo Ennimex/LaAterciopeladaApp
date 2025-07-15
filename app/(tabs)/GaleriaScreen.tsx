@@ -1,35 +1,8 @@
+import { Video as ExpoVideo, ResizeMode } from 'expo-av';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Dimensions, Image, Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { publicAPI } from '../../services/api';
-
-// Datos simulados para reels
-const reelsData = [
-  {
-    id: 'reel1',
-    title: 'Bordado en Proceso',
-    description: 'Mira cómo nuestras artesanas crean bordados únicos.',
-    icon: '▶️',
-  },
-  {
-    id: 'reel2',
-    title: 'Tejido Tradicional',
-    description: 'Descubre las técnicas ancestrales huastecas.',
-    icon: '🧵',
-  },
-  {
-    id: 'reel3',
-    title: 'Creación de Rebozo',
-    description: 'El arte de tejer un rebozo huasteco.',
-    icon: '🧶',
-  },
-  {
-    id: 'reel4',
-    title: 'Taller en Acción',
-    description: 'Aprende con nuestras maestras artesanas.',
-    icon: '👩‍🏫',
-  },
-];
 
 // Tipo para foto según modelo backend
 type Photo = {
@@ -55,7 +28,7 @@ type Video = {
 };
 
 // Estado para fotos de la API
-const Galeria: React.FC = () => {
+const GaleriaScreen: React.FC = () => {
   const [photosData, setPhotosData] = useState<Photo[]>([]);
   const [videosData, setVideosData] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
@@ -348,6 +321,18 @@ const Galeria: React.FC = () => {
           <View style={{ backgroundColor: '#fff', borderRadius: 16, padding: 16, alignItems: 'center', maxWidth: '90%' }}>
             <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#2a241f', marginBottom: 8, textAlign: 'center' }}>{selectedVideo?.titulo}</Text>
             <Text style={{ fontSize: 14, color: '#8b7d74', textAlign: 'center', marginBottom: 16 }}>{selectedVideo?.descripcion}</Text>
+            {selectedVideo?.url && (
+              <ExpoVideo
+                source={{ uri: selectedVideo.url }}
+                rate={1.0}
+                volume={1.0}
+                isMuted={false}
+                resizeMode={ResizeMode.CONTAIN}
+                shouldPlay
+                useNativeControls
+                style={{ width: 320, height: 200, borderRadius: 12, marginBottom: 16, backgroundColor: '#000' }}
+              />
+            )}
             <Pressable
               onPress={() => setVideoModalVisible(false)}
               style={{ backgroundColor: '#d63384', borderRadius: 8, paddingHorizontal: 24, paddingVertical: 8 }}
@@ -362,4 +347,4 @@ const Galeria: React.FC = () => {
 };
 
 
-export default Galeria;
+export default GaleriaScreen;
