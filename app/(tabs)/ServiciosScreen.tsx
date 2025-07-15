@@ -288,13 +288,7 @@ const ArtisanServicesScreen = () => {
         ))}
       </ScrollView>
 
-      {/* Botón Fijo de Acción */}
-      <TouchableOpacity
-        style={styles.exploreButton}
-        activeOpacity={0.8}
-      >
-        <Text style={styles.exploreButtonText}>Explorar Más</Text>
-      </TouchableOpacity>
+      {/* Botón Fijo de Acción eliminado */}
     </SafeAreaView>
   );
 };
