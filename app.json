@@ -3,11 +3,12 @@
     "name": "LaAterciopeladaApp",
     "slug": "LaAterciopeladaApp",
     "version": "1.0.0",
+    "sdkVersion": "49.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "laaterciopeladaapp",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "newArchEnabled": false,  
     "ios": {
       "supportsTablet": true
     },
@@ -38,7 +39,16 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      "expo-video"
+      "expo-video",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "gradleVersion": "7.5.1", 
+            "kotlinVersion": "1.7.22"  
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
