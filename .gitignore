@@ -1,5 +1,9 @@
 # Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
+# Ignorar archivos y directorios específicos de un proyecto
+/android
+/ios
+
 # dependencies
 node_modules/
 
