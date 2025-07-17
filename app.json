@@ -8,7 +8,6 @@
     "icon": "./assets/images/icon.png",
     "scheme": "laaterciopeladaapp",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": false,  
     "ios": {
       "supportsTablet": true
     },
@@ -17,7 +16,6 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true,
       "package": "com.enni1234.LaAterciopeladaApp",
       "versionCode": 1,
       "permissions": [],
