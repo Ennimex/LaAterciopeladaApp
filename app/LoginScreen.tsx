@@ -1,4 +1,3 @@
-
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
@@ -16,7 +15,6 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
 
   const validateEmail = (email: string) => {
-    // Validación simple de email
     return /\S+@\S+\.\S+/.test(email);
   };
 
@@ -30,13 +28,12 @@ export default function LoginScreen() {
       setError('El correo no es válido.');
       return;
     }
-    
+
     setLoading(true);
     try {
       const result = await login({ email: email.trim(), password });
-      
       if (result.success) {
-        router.replace('/(tabs)'); // Redirige a la pantalla principal después de iniciar sesión
+        router.replace('/(tabs)');
       } else {
         setError(result.message || 'Error al iniciar sesión');
       }
@@ -48,11 +45,20 @@ export default function LoginScreen() {
   };
 
   return (
-    <KeyboardAvoidingView 
+    <KeyboardAvoidingView
       style={loginStyles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <ScrollView 
+      {/* Botón regresar */}
+      <TouchableOpacity
+        onPress={() => router.back()}
+        style={loginStyles.backButton}
+      >
+        <Ionicons name="arrow-back" size={20} color="#d63384" />
+        <Text style={loginStyles.backText}>Regresar</Text>
+      </TouchableOpacity>
+
+      <ScrollView
         contentContainerStyle={loginStyles.scrollContainer}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
@@ -64,6 +70,7 @@ export default function LoginScreen() {
         />
         <Text style={loginStyles.title}>Bienvenido</Text>
         <Text style={loginStyles.subtitle}>Inicia sesión para continuar</Text>
+
         <TextInput
           style={loginStyles.input}
           placeholder="Correo electrónico"
@@ -73,6 +80,7 @@ export default function LoginScreen() {
           autoCapitalize="none"
           keyboardType="email-address"
         />
+
         <View style={loginStyles.passwordContainer}>
           <TextInput
             style={loginStyles.passwordInput}
@@ -93,7 +101,9 @@ export default function LoginScreen() {
             />
           </TouchableOpacity>
         </View>
+
         {error ? <Text style={loginStyles.error}>{error}</Text> : null}
+
         <TouchableOpacity
           style={[loginStyles.button, loading && { opacity: 0.7 }]}
           onPress={handleLogin}
@@ -101,7 +111,7 @@ export default function LoginScreen() {
         >
           <Text style={loginStyles.buttonText}>{loading ? 'Ingresando...' : 'Ingresar'}</Text>
         </TouchableOpacity>
-        
+
         <TouchableOpacity
           style={loginStyles.registerLink}
           onPress={() => router.push('/RegisterScreen')}
@@ -119,32 +129,42 @@ const loginStyles = StyleSheet.create({
     flex: 1,
     backgroundColor: typeof stylesGlobal.colors.surface.primary === 'string' ? stylesGlobal.colors.surface.primary : '#fff',
   },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingTop: 52,
+    paddingHorizontal: 20,
+    paddingBottom: 8,
+  },
+  backText: {
+    color: '#d63384',
+    fontSize: 15,
+    fontWeight: '500',
+  },
   scrollContainer: {
     flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 24,
-    paddingVertical: 40,
+    paddingVertical: 24,
   },
   logo: {
     width: 150,
     height: 150,
     marginBottom: 32,
-    borderRadius: 75, // Hace el contorno circular
+    borderRadius: 75,
     backgroundColor: '#fff',
     padding: 8,
     shadowColor: stylesGlobal.colors.primary[500] as string,
-    shadowOffset: {
-      width: 0,
-      height: 3,
-    },
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.25,
     shadowRadius: 6,
-    elevation: 6, // Para Android
+    elevation: 6,
   },
   title: {
     fontSize: stylesGlobal.typography.headings.h3.fontSize,
-    fontFamily: 'SpaceMono', // Cambia aquí si tienes Playfair Display cargada
+    fontFamily: 'SpaceMono',
     fontWeight: '700',
     color: typeof stylesGlobal.colors.primary[500] === 'string' ? stylesGlobal.colors.primary[500] : '#d63384',
     marginBottom: 8,
@@ -156,7 +176,6 @@ const loginStyles = StyleSheet.create({
   },
   input: {
     width: '100%',
-    // Solo las propiedades válidas para TextInput
     paddingVertical: 12,
     paddingHorizontal: 16,
     fontSize: stylesGlobal.typography.body.base.fontSize,
@@ -177,7 +196,7 @@ const loginStyles = StyleSheet.create({
     width: '100%',
     paddingVertical: 12,
     paddingHorizontal: 16,
-    paddingRight: 50, // Espacio para el ícono
+    paddingRight: 50,
     fontSize: stylesGlobal.typography.body.base.fontSize,
     lineHeight: 24,
     color: typeof stylesGlobal.colors.text.primary === 'string' ? stylesGlobal.colors.text.primary : '#2a241f',

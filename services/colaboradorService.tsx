@@ -1,5 +1,5 @@
 import type { AxiosProgressEvent, AxiosRequestConfig } from 'axios';
-import api from './api.js';
+import { api } from './api';
 
 // Define types
 interface Colaborador {

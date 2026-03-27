@@ -122,7 +122,7 @@ interface ColaboradorData {
 }
 
 // Configuración global de Axios
-const api: AxiosInstance = axios.create({
+export const api: AxiosInstance = axios.create({
   baseURL: 'https://back-three-gamma.vercel.app/api', // URL de tu API en Vercel
   headers: {
     'Content-Type': 'application/json',

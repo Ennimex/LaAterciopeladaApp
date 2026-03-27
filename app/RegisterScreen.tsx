@@ -21,46 +21,22 @@ export default function RegisterScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const validateEmail = (email: string) => {
-    return /\S+@\S+\.\S+/.test(email);
-  };
+  const validateEmail = (email: string) => /\S+@\S+\.\S+/.test(email);
 
   const validateForm = () => {
-    if (!formData.name.trim()) {
-      setError('El nombre es requerido.');
-      return false;
-    }
-    if (!formData.email.trim()) {
-      setError('El correo electrónico es requerido.');
-      return false;
-    }
-    if (!validateEmail(formData.email)) {
-      setError('El formato del correo no es válido.');
-      return false;
-    }
-    if (!formData.password) {
-      setError('La contraseña es requerida.');
-      return false;
-    }
-    if (formData.password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres.');
-      return false;
-    }
-    if (formData.password !== formData.confirmPassword) {
-      setError('Las contraseñas no coinciden.');
-      return false;
-    }
-    if (!formData.phone.trim()) {
-      setError('El teléfono es requerido.');
-      return false;
-    }
+    if (!formData.name.trim()) { setError('El nombre es requerido.'); return false; }
+    if (!formData.email.trim()) { setError('El correo electrónico es requerido.'); return false; }
+    if (!validateEmail(formData.email)) { setError('El formato del correo no es válido.'); return false; }
+    if (!formData.password) { setError('La contraseña es requerida.'); return false; }
+    if (formData.password.length < 6) { setError('La contraseña debe tener al menos 6 caracteres.'); return false; }
+    if (formData.password !== formData.confirmPassword) { setError('Las contraseñas no coinciden.'); return false; }
+    if (!formData.phone.trim()) { setError('El teléfono es requerido.'); return false; }
     return true;
   };
 
   const handleRegister = async () => {
     setError('');
     setSuccess('');
-    
     if (!validateForm()) return;
 
     setLoading(true);
@@ -74,9 +50,7 @@ export default function RegisterScreen() {
 
       if (result.success) {
         setSuccess('Registro exitoso. Ahora puedes iniciar sesión.');
-        setTimeout(() => {
-          router.replace('/LoginScreen');
-        }, 2000);
+        setTimeout(() => router.replace('/LoginScreen'), 2000);
       } else {
         setError(result.message || 'Error en el registro');
       }
@@ -87,116 +61,112 @@ export default function RegisterScreen() {
     }
   };
 
-  const goToLogin = () => {
-    router.replace('/LoginScreen');
-  };
+  const muted = typeof stylesGlobal.colors.text.muted === 'string' ? stylesGlobal.colors.text.muted : '#b8aca4';
+  const primary = typeof stylesGlobal.colors.primary[500] === 'string' ? stylesGlobal.colors.primary[500] : '#d63384';
+  const textPrimary = typeof stylesGlobal.colors.text.primary === 'string' ? stylesGlobal.colors.text.primary : '#2a241f';
+  const textSecondary = typeof stylesGlobal.colors.text.secondary === 'string' ? stylesGlobal.colors.text.secondary : '#524842';
 
   return (
-    <KeyboardAvoidingView 
-      style={registerStyles.container}
+    <KeyboardAvoidingView
+      style={s.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <ScrollView 
-        style={registerStyles.scrollView} 
-        contentContainerStyle={registerStyles.contentContainer}
+      {/* Botón regresar — igual que LoginScreen */}
+      <TouchableOpacity
+        onPress={() => router.back()}
+        style={s.backButton}
+      >
+        <Ionicons name="arrow-back" size={20} color={primary} />
+        <Text style={[s.backText, { color: primary }]}>Regresar</Text>
+      </TouchableOpacity>
+
+      <ScrollView
+        style={s.scrollView}
+        contentContainerStyle={s.contentContainer}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <View style={registerStyles.formContainer}>
+        <View style={s.formContainer}>
           <Image
             source={require('../assets/images/logo-aterciopelada.png')}
-            style={registerStyles.logo}
+            style={s.logo}
             resizeMode="contain"
           />
-          
-          <Text style={registerStyles.title}>Crear Cuenta</Text>
-          <Text style={registerStyles.subtitle}>Únete a La Aterciopelada</Text>
+
+          <Text style={[s.title, { color: primary }]}>Crear Cuenta</Text>
+          <Text style={[s.subtitle, { color: textSecondary }]}>Únete a La Aterciopelada</Text>
 
           <TextInput
-            style={registerStyles.input}
+            style={[s.input, { color: textPrimary }]}
             placeholder="Nombre completo"
-            placeholderTextColor={typeof stylesGlobal.colors.text.muted === 'string' ? stylesGlobal.colors.text.muted : '#b8aca4'}
+            placeholderTextColor={muted}
             value={formData.name}
-            onChangeText={(text) => setFormData({...formData, name: text})}
+            onChangeText={(text) => setFormData({ ...formData, name: text })}
             autoCapitalize="words"
           />
 
           <TextInput
-            style={registerStyles.input}
+            style={[s.input, { color: textPrimary }]}
             placeholder="Correo electrónico"
-            placeholderTextColor={typeof stylesGlobal.colors.text.muted === 'string' ? stylesGlobal.colors.text.muted : '#b8aca4'}
+            placeholderTextColor={muted}
             value={formData.email}
-            onChangeText={(text) => setFormData({...formData, email: text})}
+            onChangeText={(text) => setFormData({ ...formData, email: text })}
             autoCapitalize="none"
             keyboardType="email-address"
           />
 
           <TextInput
-            style={registerStyles.input}
+            style={[s.input, { color: textPrimary }]}
             placeholder="Teléfono"
-            placeholderTextColor={typeof stylesGlobal.colors.text.muted === 'string' ? stylesGlobal.colors.text.muted : '#b8aca4'}
+            placeholderTextColor={muted}
             value={formData.phone}
-            onChangeText={(text) => setFormData({...formData, phone: text})}
+            onChangeText={(text) => setFormData({ ...formData, phone: text })}
             keyboardType="phone-pad"
           />
 
-          <View style={registerStyles.passwordContainer}>
+          <View style={s.passwordContainer}>
             <TextInput
-              style={registerStyles.passwordInput}
+              style={[s.passwordInput, { color: textPrimary }]}
               placeholder="Contraseña"
-              placeholderTextColor={typeof stylesGlobal.colors.text.muted === 'string' ? stylesGlobal.colors.text.muted : '#b8aca4'}
+              placeholderTextColor={muted}
               value={formData.password}
-              onChangeText={(text) => setFormData({...formData, password: text})}
+              onChangeText={(text) => setFormData({ ...formData, password: text })}
               secureTextEntry={!showPassword}
             />
-            <TouchableOpacity
-              style={registerStyles.eyeIcon}
-              onPress={() => setShowPassword(!showPassword)}
-            >
-              <Ionicons
-                name={showPassword ? 'eye-off' : 'eye'}
-                size={24}
-                color={typeof stylesGlobal.colors.text.muted === 'string' ? stylesGlobal.colors.text.muted : '#b8aca4'}
-              />
+            <TouchableOpacity style={s.eyeIcon} onPress={() => setShowPassword(!showPassword)}>
+              <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={24} color={muted} />
             </TouchableOpacity>
           </View>
 
-          <View style={registerStyles.passwordContainer}>
+          <View style={s.passwordContainer}>
             <TextInput
-              style={registerStyles.passwordInput}
+              style={[s.passwordInput, { color: textPrimary }]}
               placeholder="Confirmar contraseña"
-              placeholderTextColor={typeof stylesGlobal.colors.text.muted === 'string' ? stylesGlobal.colors.text.muted : '#b8aca4'}
+              placeholderTextColor={muted}
               value={formData.confirmPassword}
-              onChangeText={(text) => setFormData({...formData, confirmPassword: text})}
+              onChangeText={(text) => setFormData({ ...formData, confirmPassword: text })}
               secureTextEntry={!showConfirmPassword}
             />
-            <TouchableOpacity
-              style={registerStyles.eyeIcon}
-              onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-            >
-              <Ionicons
-                name={showConfirmPassword ? 'eye-off' : 'eye'}
-                size={24}
-                color={typeof stylesGlobal.colors.text.muted === 'string' ? stylesGlobal.colors.text.muted : '#b8aca4'}
-              />
+            <TouchableOpacity style={s.eyeIcon} onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
+              <Ionicons name={showConfirmPassword ? 'eye-off' : 'eye'} size={24} color={muted} />
             </TouchableOpacity>
           </View>
 
-          {error ? <Text style={registerStyles.error}>{error}</Text> : null}
-          {success ? <Text style={registerStyles.success}>{success}</Text> : null}
+          {error ? <Text style={s.error}>{error}</Text> : null}
+          {success ? <Text style={s.success}>{success}</Text> : null}
 
           <TouchableOpacity
-            style={[registerStyles.button, loading && { opacity: 0.7 }]}
+            style={[s.button, { backgroundColor: primary }, loading && { opacity: 0.7 }]}
             onPress={handleRegister}
             disabled={loading}
           >
-            <Text style={registerStyles.buttonText}>
+            <Text style={s.buttonText}>
               {loading ? 'Registrando...' : 'Crear Cuenta'}
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={goToLogin} style={registerStyles.linkContainer}>
-            <Text style={registerStyles.linkText}>
+          <TouchableOpacity onPress={() => router.replace('/LoginScreen')} style={s.linkContainer}>
+            <Text style={[s.linkText, { color: primary }]}>
               ¿Ya tienes cuenta? Inicia sesión
             </Text>
           </TouchableOpacity>
@@ -206,10 +176,23 @@ export default function RegisterScreen() {
   );
 }
 
-const registerStyles = StyleSheet.create({
+const s = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: typeof stylesGlobal.colors.surface.primary === 'string' ? stylesGlobal.colors.surface.primary : '#fff',
+    backgroundColor: typeof stylesGlobal.colors.surface.primary === 'string'
+      ? stylesGlobal.colors.surface.primary : '#fff',
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingTop: 52,
+    paddingHorizontal: 20,
+    paddingBottom: 8,
+  },
+  backText: {
+    fontSize: 15,
+    fontWeight: '500',
   },
   scrollView: {
     flex: 1,
@@ -218,7 +201,7 @@ const registerStyles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'center',
     paddingHorizontal: 24,
-    paddingVertical: 40,
+    paddingVertical: 24,
   },
   formContainer: {
     alignItems: 'center',
@@ -232,12 +215,8 @@ const registerStyles = StyleSheet.create({
     marginBottom: 24,
     borderRadius: 60,
     backgroundColor: '#fff',
-    padding: 6,
-    shadowColor: typeof stylesGlobal.colors.primary[500] === 'string' ? stylesGlobal.colors.primary[500] : '#d63384',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowColor: stylesGlobal.colors.primary[500] as string,
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 4,
@@ -246,13 +225,11 @@ const registerStyles = StyleSheet.create({
     fontSize: stylesGlobal.typography.headings.h3.fontSize,
     fontFamily: 'SpaceMono',
     fontWeight: '700',
-    color: typeof stylesGlobal.colors.primary[500] === 'string' ? stylesGlobal.colors.primary[500] : '#d63384',
     marginBottom: 8,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: stylesGlobal.typography.body.base.fontSize,
-    color: typeof stylesGlobal.colors.text.secondary === 'string' ? stylesGlobal.colors.text.secondary : '#524842',
     marginBottom: 32,
     textAlign: 'center',
   },
@@ -262,7 +239,6 @@ const registerStyles = StyleSheet.create({
     paddingHorizontal: 16,
     fontSize: stylesGlobal.typography.body.base.fontSize,
     lineHeight: 24,
-    color: typeof stylesGlobal.colors.text.primary === 'string' ? stylesGlobal.colors.text.primary : '#2a241f',
     backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: '#ddd6d1',
@@ -278,10 +254,9 @@ const registerStyles = StyleSheet.create({
     width: '100%',
     paddingVertical: 12,
     paddingHorizontal: 16,
-    paddingRight: 50, // Espacio para el ícono
+    paddingRight: 50,
     fontSize: stylesGlobal.typography.body.base.fontSize,
     lineHeight: 24,
-    color: typeof stylesGlobal.colors.text.primary === 'string' ? stylesGlobal.colors.text.primary : '#2a241f',
     backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: '#ddd6d1',
@@ -294,7 +269,6 @@ const registerStyles = StyleSheet.create({
     transform: [{ translateY: -12 }],
   },
   button: {
-    backgroundColor: typeof stylesGlobal.colors.primary[500] === 'string' ? stylesGlobal.colors.primary[500] : '#d63384',
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 10,
@@ -309,12 +283,14 @@ const registerStyles = StyleSheet.create({
     fontSize: stylesGlobal.typography.body.base.fontSize,
   },
   error: {
-    color: typeof stylesGlobal.colors.semantic.error.main === 'string' ? stylesGlobal.colors.semantic.error.main : '#e11d48',
+    color: typeof stylesGlobal.colors.semantic.error.main === 'string'
+      ? stylesGlobal.colors.semantic.error.main : '#e11d48',
     marginBottom: 8,
     textAlign: 'center',
   },
   success: {
-    color: typeof stylesGlobal.colors.semantic.success.main === 'string' ? stylesGlobal.colors.semantic.success.main : '#22c55e',
+    color: typeof stylesGlobal.colors.semantic.success.main === 'string'
+      ? stylesGlobal.colors.semantic.success.main : '#22c55e',
     marginBottom: 8,
     textAlign: 'center',
   },
@@ -322,7 +298,6 @@ const registerStyles = StyleSheet.create({
     paddingVertical: 8,
   },
   linkText: {
-    color: typeof stylesGlobal.colors.primary[500] === 'string' ? stylesGlobal.colors.primary[500] : '#d63384',
     fontSize: stylesGlobal.typography.body.small.fontSize,
     fontWeight: '500',
     textAlign: 'center',

@@ -1,30 +1,19 @@
 import { useRouter } from 'expo-router';
 import React, { useEffect } from 'react';
 import { ActivityIndicator, Image, StyleSheet, View } from 'react-native';
-import { useAuth } from '../context/AuthProvider';
 import { stylesGlobal } from '../styles/stylesGlobal';
 
 export default function SplashScreen() {
   const router = useRouter();
-  const { isAuthenticated, checkTokenExpiration } = useAuth();
 
   useEffect(() => {
-    const initializeApp = async () => {
-      // Verificar si el token aún es válido
-      const tokenValid = await checkTokenExpiration();
-      
-      // Simula carga adicional
-      setTimeout(() => {
-        if (tokenValid && isAuthenticated) {
-          router.replace('/(tabs)');
-        } else {
-          router.replace('/LoginScreen');
-        }
-      }, 1500);
-    };
+    // Siempre va al Home, el login es opcional desde el Home
+    const timer = setTimeout(() => {
+      router.replace('/(tabs)');
+    }, 1500);
 
-    initializeApp();
-  }, [router, isAuthenticated, checkTokenExpiration]);
+    return () => clearTimeout(timer);
+  }, [router]);
 
   return (
     <View style={splashStyles.container}>
@@ -41,7 +30,9 @@ export default function SplashScreen() {
 const splashStyles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: typeof stylesGlobal.colors.surface.primary === 'string' ? stylesGlobal.colors.surface.primary : '#fff',
+    backgroundColor: typeof stylesGlobal.colors.surface.primary === 'string'
+      ? stylesGlobal.colors.surface.primary
+      : '#fff',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 20,
@@ -50,16 +41,13 @@ const splashStyles = StyleSheet.create({
     width: 200,
     height: 200,
     marginBottom: 40,
-    borderRadius: 100, // Hace el contorno circular
+    borderRadius: 100,
     backgroundColor: '#fff',
     padding: 10,
     shadowColor: stylesGlobal.colors.primary[500] as string,
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
-    elevation: 8, // Para Android
+    elevation: 8,
   },
 });

@@ -1,37 +1,38 @@
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import React, { useEffect, useState } from 'react';
 import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { publicAPI } from '../../services/api';
 
-// Datos proporcionados
-const beneficiosData = [
+type MaterialIconName = React.ComponentProps<typeof MaterialIcons>['name'];
+
+const beneficiosData: { id: string; titulo: string; descripcion: string; icono: MaterialIconName }[] = [
   {
     id: "calidad",
     titulo: "Excelencia Artesanal",
     descripcion: "Cada pieza es meticulosamente elaborada por maestras artesanas con décadas de experiencia, garantizando la más alta calidad.",
-    icono: "⭐",
+    icono: "star",
   },
   {
     id: "autenticidad",
     titulo: "Herencia Cultural",
     descripcion: "Preservamos técnicas ancestrales huastecas, manteniendo viva la tradición textil de nuestros pueblos originarios.",
-    icono: "🌿",
+    icono: "eco",
   },
   {
     id: "artesanos",
     titulo: "Comercio Justo",
     descripcion: "Trabajamos directamente con comunidades artesanales, asegurando condiciones dignas y precios justos.",
-    icono: "👐",
+    icono: "handshake",
   },
   {
     id: "exclusividad",
     titulo: "Piezas Únicas",
     descripcion: "Cada creación es irrepetible, diseñada especialmente para quienes valoran la autenticidad y la exclusividad.",
-    icono: "💎",
+    icono: "diamond",
   },
 ];
 
-// Estado para los servicios obtenidos de la API
 interface Servicio {
   _id?: string;
   id?: string;
@@ -46,7 +47,6 @@ const ArtisanServicesScreen = () => {
   const [servicios, setServicios] = useState<Servicio[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Determinar tamaño de pantalla para márgenes responsivos
   const { width } = Dimensions.get('window');
   const isSmallScreen = width < 375;
 
@@ -54,14 +54,12 @@ const ArtisanServicesScreen = () => {
     const fetchServicios = async () => {
       try {
         const response = await publicAPI.getServicios();
-        // El backend regresa un array directamente
-        // Normalizar id a string para compatibilidad con el componente
         const arr = Array.isArray(response) ? response : response.data ?? [];
         setServicios(arr.map((serv: any) => ({
           ...serv,
           id: serv._id ? String(serv._id) : (serv.id ? String(serv.id) : undefined)
         })));
-      } catch (error) {
+      } catch {
         setServicios([]);
       } finally {
         setLoading(false);
@@ -70,43 +68,57 @@ const ArtisanServicesScreen = () => {
     fetchServicios();
   }, []);
 
-  // Estilos inyectados directamente
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: '#fefcf3', // Fondo cálido
+      backgroundColor: '#fefcf3',
     },
+
+    // Hero tipográfico elegante
     heroContainer: {
       backgroundColor: '#fdf2f4',
-      paddingVertical: 16,
-      paddingHorizontal: isSmallScreen ? 12 : 16,
+      paddingVertical: 32,
+      paddingHorizontal: isSmallScreen ? 20 : 24,
       alignItems: 'center',
-      flexDirection: 'row',
-      justifyContent: 'center',
     },
-    heroIcon: {
-      fontSize: 40,
-      marginRight: 12,
+    heroEyebrow: {
+      fontSize: 11,
+      fontWeight: '600',
+      letterSpacing: 3,
       color: '#d63384',
+      textTransform: 'uppercase',
+      marginBottom: 10,
     },
     heroTitle: {
-      fontSize: 26,
-      fontWeight: '600',
+      fontSize: 28,
+      fontWeight: '700',
       color: '#2a241f',
+      textAlign: 'center',
+      letterSpacing: 0.3,
+      marginBottom: 12,
+    },
+    heroDivider: {
+      width: 48,
+      height: 2,
+      backgroundColor: '#d63384',
+      borderRadius: 2,
+      marginBottom: 14,
     },
     heroSubtitle: {
-      fontSize: 16,
+      fontSize: 15,
       color: '#524842',
       textAlign: 'center',
-      marginVertical: 12,
-      marginHorizontal: isSmallScreen ? 12 : 16,
+      lineHeight: 22,
+      maxWidth: 280,
     },
+
     sectionTitle: {
       fontSize: 20,
       fontWeight: '600',
       color: '#2a241f',
       marginVertical: 12,
       marginHorizontal: isSmallScreen ? 12 : 16,
+      letterSpacing: 0.2,
     },
     serviceScroll: {
       paddingHorizontal: isSmallScreen ? 12 : 16,
@@ -115,15 +127,17 @@ const ArtisanServicesScreen = () => {
     serviceCard: {
       backgroundColor: '#ffffff',
       borderRadius: 16,
-      padding: 12,
+      padding: 16,
       marginRight: 12,
-      width: 200, // Ancho fijo para tarjetas
+      width: 200,
       shadowColor: '#2a241f',
       shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.2,
+      shadowOpacity: 0.08,
       shadowRadius: 4,
       elevation: 2,
       alignItems: 'center',
+      borderTopWidth: 3,
+      borderTopColor: '#d63384',
     },
     serviceIconContainer: {
       width: 60,
@@ -132,18 +146,15 @@ const ArtisanServicesScreen = () => {
       backgroundColor: '#fce7eb',
       justifyContent: 'center',
       alignItems: 'center',
-      marginBottom: 8,
-    },
-    serviceIcon: {
-      fontSize: 40,
-      color: '#d63384',
+      marginBottom: 10,
     },
     serviceTitle: {
-      fontSize: 16,
-      fontWeight: '500',
+      fontSize: 15,
+      fontWeight: '600',
       color: '#2a241f',
       textAlign: 'center',
-      marginBottom: 4,
+      marginBottom: 6,
+      letterSpacing: 0.1,
     },
     serviceDescription: {
       fontSize: 12,
@@ -151,90 +162,71 @@ const ArtisanServicesScreen = () => {
       textAlign: 'center',
       lineHeight: 18,
     },
+
+    // Beneficios con MaterialIcons
     benefitContainer: {
       backgroundColor: '#ffffff',
       borderRadius: 12,
-      padding: 12,
+      padding: 16,
       marginHorizontal: isSmallScreen ? 12 : 16,
       marginBottom: 12,
       borderWidth: 1,
-      borderColor: '#e6a756',
+      borderColor: '#ede9e6',
       shadowColor: '#2a241f',
       shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.1,
+      shadowOpacity: 0.06,
       shadowRadius: 2,
       elevation: 1,
       flexDirection: 'row',
-      alignItems: 'center',
+      alignItems: 'flex-start',
     },
-    benefitIconContainer: {
-      width: 48,
-      height: 48,
-      borderRadius: 24,
+    benefitIconCircle: {
+      width: 44,
+      height: 44,
+      borderRadius: 22,
       backgroundColor: '#fef7e0',
       justifyContent: 'center',
       alignItems: 'center',
-      marginRight: 12,
-    },
-    benefitIcon: {
-      fontSize: 32,
-      color: '#e6a756',
+      marginRight: 14,
+      flexShrink: 0,
     },
     benefitContent: {
       flex: 1,
     },
     benefitTitle: {
-      fontSize: 16,
-      fontWeight: '500',
+      fontSize: 15,
+      fontWeight: '600',
       color: '#2a241f',
       marginBottom: 4,
+      letterSpacing: 0.1,
     },
     benefitDescription: {
-      fontSize: 14,
+      fontSize: 13,
       color: '#8b7d74',
-      lineHeight: 20,
-    },
-    exploreButton: {
-      position: 'absolute',
-      bottom: 16,
-      left: isSmallScreen ? 12 : 16,
-      right: isSmallScreen ? 12 : 16,
-      backgroundColor: '#d63384',
-      paddingVertical: 14,
-      paddingHorizontal: 24,
-      borderRadius: 12,
-      borderWidth: 2,
-      borderColor: '#e6a756',
-      alignItems: 'center',
-      shadowColor: '#d63384',
-      shadowOffset: { width: 0, height: 8 },
-      shadowOpacity: 0.3,
-      shadowRadius: 32,
-      elevation: 4,
-    },
-    exploreButtonText: {
-      fontSize: 16,
-      fontWeight: '600',
-      color: '#ffffff',
+      lineHeight: 19,
     },
   });
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Hero Section */}
-        <View style={styles.heroContainer}>
-          <Text style={styles.heroIcon}>🌿</Text>
-          <Text style={styles.heroTitle}>Artesanía Huasteca</Text>
-        </View>
-        <Text style={styles.heroSubtitle}>
-          Explora la belleza de nuestras tradiciones textiles
-        </Text>
 
-        {/* Servicios Section (Horizontal Scroll) */}
+        {/* Hero tipográfico */}
+        <View style={styles.heroContainer}>
+          <Text style={styles.heroEyebrow}>La Aterciopelada</Text>
+          <Text style={styles.heroTitle}>Artesanía Huasteca</Text>
+          <View style={styles.heroDivider} />
+          <Text style={styles.heroSubtitle}>
+            Explora la belleza de nuestras tradiciones textiles
+          </Text>
+        </View>
+
+        {/* Servicios */}
         <Text style={styles.sectionTitle}>Nuestros Servicios</Text>
         {loading ? (
-          <Text style={{ textAlign: 'center', marginVertical: 16 }}>Cargando servicios...</Text>
+          <Text style={{ textAlign: 'center', marginVertical: 16, color: '#8b7d74' }}>
+            Cargando servicios...
+          </Text>
         ) : (
           <ScrollView
             horizontal
@@ -247,23 +239,20 @@ const ArtisanServicesScreen = () => {
               <TouchableOpacity
                 key={service._id || service.id || service.nombre}
                 style={styles.serviceCard}
-                onPress={() => {
-                  // TODO: Implementar navegación a detalles del servicio
-                }}
+                activeOpacity={0.85}
+                onPress={() => {}}
               >
                 {service.imagen ? (
                   <View style={styles.serviceIconContainer}>
-                    <View style={{ width: 60, height: 60, borderRadius: 30, overflow: 'hidden', backgroundColor: '#fce7eb', justifyContent: 'center', alignItems: 'center' }}>
-                      <Image
-                        source={{ uri: service.imagen }}
-                        style={{ width: 60, height: 60, borderRadius: 30 }}
-                        resizeMode="cover"
-                      />
-                    </View>
+                    <Image
+                      source={{ uri: service.imagen }}
+                      style={{ width: 60, height: 60, borderRadius: 30 }}
+                      resizeMode="cover"
+                    />
                   </View>
                 ) : (
                   <View style={styles.serviceIconContainer}>
-                    <Text style={styles.serviceIcon}>{service.icono || '🧵'}</Text>
+                    <MaterialIcons name="checkroom" size={28} color="#d63384" />
                   </View>
                 )}
                 <Text style={styles.serviceTitle}>{service.titulo || service.nombre}</Text>
@@ -273,12 +262,12 @@ const ArtisanServicesScreen = () => {
           </ScrollView>
         )}
 
-        {/* Por Qué Elegirnos Section */}
+        {/* Por Qué Elegirnos */}
         <Text style={styles.sectionTitle}>Por Qué Elegirnos</Text>
         {beneficiosData.map((benefit) => (
           <View key={benefit.id} style={styles.benefitContainer}>
-            <View style={styles.benefitIconContainer}>
-              <Text style={styles.benefitIcon}>{benefit.icono}</Text>
+            <View style={styles.benefitIconCircle}>
+              <MaterialIcons name={benefit.icono} size={22} color="#e6a756" />
             </View>
             <View style={styles.benefitContent}>
               <Text style={styles.benefitTitle}>{benefit.titulo}</Text>
@@ -286,9 +275,10 @@ const ArtisanServicesScreen = () => {
             </View>
           </View>
         ))}
-      </ScrollView>
 
-      {/* Botón Fijo de Acción eliminado */}
+        {/* Espaciado inferior */}
+        <View style={{ height: 32 }} />
+      </ScrollView>
     </SafeAreaView>
   );
 };

@@ -1,4 +1,4 @@
-import api from './api.js';
+import { api } from './api';
 
 // Define the Categoria type
 interface Categoria {

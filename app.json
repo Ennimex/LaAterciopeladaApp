@@ -45,7 +45,8 @@
             "kotlinVersion": "1.7.22"
           }
         }
-      ]
+      ],
+      "expo-audio"
     ],
     "experiments": {
       "typedRoutes": true
