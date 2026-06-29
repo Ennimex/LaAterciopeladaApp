@@ -51,7 +51,7 @@ export default function LoginScreen() {
     >
       {/* Botón regresar */}
       <TouchableOpacity
-        onPress={() => router.back()}
+        onPress={() => (router.canGoBack() ? router.back() : router.replace('/(tabs)'))}
         style={loginStyles.backButton}
       >
         <Ionicons name="arrow-back" size={20} color="#d63384" />
@@ -164,8 +164,7 @@ const loginStyles = StyleSheet.create({
   },
   title: {
     fontSize: stylesGlobal.typography.headings.h3.fontSize,
-    fontFamily: 'SpaceMono',
-    fontWeight: '700',
+    fontFamily: stylesGlobal.typography.fonts.serif,
     color: typeof stylesGlobal.colors.primary[500] === 'string' ? stylesGlobal.colors.primary[500] : '#d63384',
     marginBottom: 8,
   },

@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { publicAPI } from '../../services/api';
+import { AppText } from '../../components/ui/AppText';
+import { Hero } from '../../components/ui/Hero';
 
 type MaterialIconName = React.ComponentProps<typeof MaterialIcons>['name'];
 
@@ -74,51 +76,9 @@ const ArtisanServicesScreen = () => {
       backgroundColor: '#fefcf3',
     },
 
-    // Hero tipográfico elegante
-    heroContainer: {
-      backgroundColor: '#fdf2f4',
-      paddingVertical: 32,
-      paddingHorizontal: isSmallScreen ? 20 : 24,
-      alignItems: 'center',
-    },
-    heroEyebrow: {
-      fontSize: 11,
-      fontWeight: '600',
-      letterSpacing: 3,
-      color: '#d63384',
-      textTransform: 'uppercase',
-      marginBottom: 10,
-    },
-    heroTitle: {
-      fontSize: 28,
-      fontWeight: '700',
-      color: '#2a241f',
-      textAlign: 'center',
-      letterSpacing: 0.3,
-      marginBottom: 12,
-    },
-    heroDivider: {
-      width: 48,
-      height: 2,
-      backgroundColor: '#d63384',
-      borderRadius: 2,
-      marginBottom: 14,
-    },
-    heroSubtitle: {
-      fontSize: 15,
-      color: '#524842',
-      textAlign: 'center',
-      lineHeight: 22,
-      maxWidth: 280,
-    },
-
     sectionTitle: {
-      fontSize: 20,
-      fontWeight: '600',
-      color: '#2a241f',
       marginVertical: 12,
       marginHorizontal: isSmallScreen ? 12 : 16,
-      letterSpacing: 0.2,
     },
     serviceScroll: {
       paddingHorizontal: isSmallScreen ? 12 : 16,
@@ -212,17 +172,14 @@ const ArtisanServicesScreen = () => {
       <ScrollView showsVerticalScrollIndicator={false}>
 
         {/* Hero tipográfico */}
-        <View style={styles.heroContainer}>
-          <Text style={styles.heroEyebrow}>La Aterciopelada</Text>
-          <Text style={styles.heroTitle}>Artesanía Huasteca</Text>
-          <View style={styles.heroDivider} />
-          <Text style={styles.heroSubtitle}>
-            Explora la belleza de nuestras tradiciones textiles
-          </Text>
-        </View>
+        <Hero
+          eyebrow="La Aterciopelada"
+          title="Artesanía Huasteca"
+          subtitle="Explora la belleza de nuestras tradiciones textiles"
+        />
 
         {/* Servicios */}
-        <Text style={styles.sectionTitle}>Nuestros Servicios</Text>
+        <AppText variant="h2" style={styles.sectionTitle}>Nuestros Servicios</AppText>
         {loading ? (
           <Text style={{ textAlign: 'center', marginVertical: 16, color: '#8b7d74' }}>
             Cargando servicios...
@@ -263,7 +220,7 @@ const ArtisanServicesScreen = () => {
         )}
 
         {/* Por Qué Elegirnos */}
-        <Text style={styles.sectionTitle}>Por Qué Elegirnos</Text>
+        <AppText variant="h2" style={styles.sectionTitle}>Por Qué Elegirnos</AppText>
         {beneficiosData.map((benefit) => (
           <View key={benefit.id} style={styles.benefitContainer}>
             <View style={styles.benefitIconCircle}>

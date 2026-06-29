@@ -50,6 +50,11 @@ const PerfilScreen = () => {
   const errorColor = stylesGlobal.colors.semantic.error.main as string;
 
   const loadProfile = useCallback(async () => {
+    // Pantalla solo para usuarios autenticados: sin sesión no se pide el perfil.
+    if (!user) {
+      setLoadingProfile(false);
+      return;
+    }
     try {
       setLoadingProfile(true);
       const data = await profileService.getProfile();
@@ -67,6 +72,11 @@ const PerfilScreen = () => {
   useEffect(() => {
     loadProfile();
   }, [loadProfile]);
+
+  // Si no hay sesión, salir del Perfil (evita pedir /perfil sin token → 401 en bucle)
+  useEffect(() => {
+    if (!user) router.replace('/LoginScreen');
+  }, [user, router]);
 
   const handleSaveProfile = async () => {
     const validation = profileService.validateProfile({ name, email, phone });
@@ -202,6 +212,22 @@ const PerfilScreen = () => {
       shadowOpacity: 0.06,
       shadowRadius: 3,
       elevation: 2,
+    },
+    navItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      backgroundColor: surfacePrimary,
+      borderRadius: 12,
+      paddingVertical: 16,
+      paddingHorizontal: 16,
+      marginBottom: 10,
+    },
+    navItemText: {
+      flex: 1,
+      fontSize: 15,
+      fontWeight: '600',
+      color: textPrimary,
     },
     label: {
       fontSize: 13,
@@ -445,6 +471,18 @@ const PerfilScreen = () => {
                 </TouchableOpacity>
               </View>
             )}
+
+            {/* Accesos del usuario registrado */}
+            <TouchableOpacity style={styles.navItem} onPress={() => router.push('/MisFavoritos')}>
+              <Ionicons name="heart-outline" size={20} color={primary} />
+              <Text style={styles.navItemText}>Mis Favoritos</Text>
+              <Ionicons name="chevron-forward" size={18} color={textMuted} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.navItem} onPress={() => router.push('/MisSolicitudes')}>
+              <Ionicons name="document-text-outline" size={20} color={primary} />
+              <Text style={styles.navItemText}>Mis Solicitudes</Text>
+              <Ionicons name="chevron-forward" size={18} color={textMuted} />
+            </TouchableOpacity>
 
             {/* Botón cerrar sesión — siempre visible */}
             <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>

@@ -12,5 +12,5 @@ export { default as tallaService } from './tallaService.js';
 export { default as videoService } from './videoService.js';
 
 // API base (sin funciones admin)
-export { default as api, authAPI, publicAPI } from './api.js';
+export { api, authAPI, publicAPI } from './api.js';
 

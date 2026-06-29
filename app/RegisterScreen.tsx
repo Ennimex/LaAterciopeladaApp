@@ -73,7 +73,7 @@ export default function RegisterScreen() {
     >
       {/* Botón regresar — igual que LoginScreen */}
       <TouchableOpacity
-        onPress={() => router.back()}
+        onPress={() => (router.canGoBack() ? router.back() : router.replace('/(tabs)'))}
         style={s.backButton}
       >
         <Ionicons name="arrow-back" size={20} color={primary} />
@@ -223,8 +223,7 @@ const s = StyleSheet.create({
   },
   title: {
     fontSize: stylesGlobal.typography.headings.h3.fontSize,
-    fontFamily: 'SpaceMono',
-    fontWeight: '700',
+    fontFamily: stylesGlobal.typography.fonts.serif,
     marginBottom: 8,
     textAlign: 'center',
   },

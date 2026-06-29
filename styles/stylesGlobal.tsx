@@ -20,6 +20,14 @@ interface Typography {
     script: string;
     mono: string;
   };
+  fonts: {
+    serif: string;
+    serifSemi: string;
+    body: string;
+    bodyMedium: string;
+    bodySemibold: string;
+    bodyBold: string;
+  };
   scale: { [key: string]: number };
   headings: { [key: string]: any };
   body: { [key: string]: any };
@@ -392,10 +400,19 @@ const stylesGlobal: StylesGlobal = {
   // ===============================
   typography: {
     families: {
-      display: "System", // iOS: San Francisco, Android: Roboto
-      body: "System",
-      script: "System",
+      display: "PlayfairDisplay_700Bold", // Serif de marca (títulos)
+      body: "Inter_400Regular", // Sans de marca (texto)
+      script: "PlayfairDisplay_600SemiBold",
       mono: "Courier New", // Monospace disponible en ambas plataformas
+    },
+    // Mapa por peso: en RN cada peso es una familia distinta (fontWeight no la cambia)
+    fonts: {
+      serif: "PlayfairDisplay_700Bold",
+      serifSemi: "PlayfairDisplay_600SemiBold",
+      body: "Inter_400Regular",
+      bodyMedium: "Inter_500Medium",
+      bodySemibold: "Inter_600SemiBold",
+      bodyBold: "Inter_700Bold",
     },
     scale: {
       xs: 12, // 0.75rem

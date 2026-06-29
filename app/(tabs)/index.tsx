@@ -10,7 +10,6 @@ import {
   StatusBar,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View
 } from 'react-native';
@@ -18,6 +17,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../context/AuthProvider';
 import { publicAPI } from '../../services/api';
 import { globalStyles, mobileHelpers, stylesGlobal } from '../../styles/stylesGlobal';
+import { AppText } from '../../components/ui/AppText';
+import { Hero } from '../../components/ui/Hero';
 
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
@@ -48,8 +49,6 @@ const InicioScreen = () => {
   const router = useRouter();
   const [categorias, setCategorias] = useState<any[]>([]);
   const [localidades, setLocalidades] = useState<any[]>([]);
-  const [comentarios, setComentarios] = useState<any[]>([]);
-  const [comentarioTexto, setComentarioTexto] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -82,7 +81,6 @@ const InicioScreen = () => {
 
       setCategorias(categoriasConImagenes);
       setLocalidades(localidadesConEmpresas);
-      setComentarios([]);
     } catch (error: any) {
       Alert.alert("Error cargando categorías", error?.error || error?.message || "Error desconocido");
     } finally {
@@ -111,24 +109,6 @@ const InicioScreen = () => {
     navigation.navigate("ProductosScreen", { localidad: localidad.nombre });
   };
 
-  const handleSubmitComentario = async () => {
-    if (!comentarioTexto.trim()) {
-      Alert.alert("Error", "Por favor escribe un comentario");
-      return;
-    }
-    if (!isAuthenticated) {
-      router.push('/LoginScreen');
-      return;
-    }
-    try {
-      if (!user?.id) throw new Error("Usuario no identificado");
-      Alert.alert("Información", "Función en desarrollo");
-      setComentarioTexto("");
-    } catch (error: any) {
-      Alert.alert("Error", error.message || "No se pudo enviar el comentario");
-    }
-  };
-
   const handleExplorarServicios = () => {
     router.push('/(tabs)/ServiciosScreen');
   };
@@ -136,30 +116,14 @@ const InicioScreen = () => {
   const primary = stylesGlobal.colors.primary[500] as string;
 
   const dynamicStyles = StyleSheet.create({
-    heroContainer: {
+    heroActions: {
       backgroundColor: stylesGlobal.colors.primary[50] as string,
-      paddingVertical: mobileHelpers.getDynamicSpacing(stylesGlobal.spacing.sections.md),
       paddingHorizontal: stylesGlobal.spacing.mobile.content,
+      paddingTop: stylesGlobal.spacing.scale[2],
+      paddingBottom: stylesGlobal.spacing.scale[6],
       alignItems: "center" as const
     },
-    heroTitle: {
-      fontSize: mobileHelpers.getDynamicFontSize(stylesGlobal.typography.scale["3xl"]),
-      fontWeight: stylesGlobal.typography.weights.bold as any,
-      color: stylesGlobal.colors.text.primary as string,
-      textAlign: "center" as const,
-      marginBottom: stylesGlobal.spacing.scale[3]
-    },
-    heroSubtitle: {
-      fontSize: mobileHelpers.getDynamicFontSize(stylesGlobal.typography.scale.lg),
-      color: stylesGlobal.colors.text.secondary as string,
-      textAlign: "center" as const,
-      lineHeight: Math.round(stylesGlobal.typography.leading.relaxed * stylesGlobal.typography.scale.lg),
-      marginBottom: stylesGlobal.spacing.scale[6]
-    },
     sectionTitle: {
-      fontSize: mobileHelpers.getDynamicFontSize(stylesGlobal.typography.scale["2xl"]),
-      fontWeight: stylesGlobal.typography.weights.semibold as any,
-      color: stylesGlobal.colors.text.primary as string,
       marginBottom: stylesGlobal.spacing.scale[4],
       marginTop: stylesGlobal.spacing.scale[8]
     },
@@ -219,12 +183,13 @@ const InicioScreen = () => {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
         {/* Hero Section */}
-        <View style={dynamicStyles.heroContainer}>
-          <Text style={dynamicStyles.heroTitle}>Descubre La Aterciopelada</Text>
-          <Text style={dynamicStyles.heroSubtitle}>
-            Encuentra los mejores servicios y lugares de tu ciudad en un solo lugar
-          </Text>
+        <Hero
+          eyebrow="La Aterciopelada"
+          title="Vestimenta de Danza Huasteca"
+          subtitle="Piezas bordadas a mano que honran nuestra herencia textil."
+        />
 
+        <View style={dynamicStyles.heroActions}>
           <TouchableOpacity
             style={[globalStyles.buttonBase, globalStyles.buttonPrimary, { marginBottom: stylesGlobal.spacing.scale[3] }]}
             onPress={handleExplorarServicios}
@@ -268,7 +233,7 @@ const InicioScreen = () => {
         <View style={globalStyles.screenContent}>
 
           {/* Categorías */}
-          <Text style={dynamicStyles.sectionTitle}>Categorías Principales</Text>
+          <AppText variant="h2" style={dynamicStyles.sectionTitle}>Categorías</AppText>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -324,7 +289,7 @@ const InicioScreen = () => {
           </ScrollView>
 
           {/* Localidades — sin ícono, tipografía limpia */}
-          <Text style={dynamicStyles.sectionTitle}>Explora por Localidades</Text>
+          <AppText variant="h2" style={dynamicStyles.sectionTitle}>Explora por Localidades</AppText>
           {localidades.map((localidad) => (
             <TouchableOpacity
               key={localidad.id}
@@ -353,66 +318,6 @@ const InicioScreen = () => {
               <MaterialIcons name="chevron-right" size={22} color={stylesGlobal.colors.text.muted as string} />
             </TouchableOpacity>
           ))}
-
-          {/* Comentarios — solo si está autenticado */}
-          {isAuthenticated && (
-            <>
-              <Text style={dynamicStyles.sectionTitle}>Lo que dicen nuestros usuarios</Text>
-              <View style={{
-                backgroundColor: stylesGlobal.colors.surface.secondary as string,
-                borderRadius: 8, padding: stylesGlobal.spacing.scale[4],
-                marginBottom: stylesGlobal.spacing.scale[4]
-              }}>
-                <TextInput
-                  style={[globalStyles.inputBase, { marginBottom: stylesGlobal.spacing.scale[3] }]}
-                  placeholder="Comparte tu experiencia..."
-                  value={comentarioTexto}
-                  onChangeText={setComentarioTexto}
-                  multiline
-                  numberOfLines={3}
-                />
-                <TouchableOpacity
-                  style={[globalStyles.buttonSm, globalStyles.buttonPrimary]}
-                  onPress={handleSubmitComentario}
-                >
-                  <Text style={{ color: stylesGlobal.colors.primary.contrast as string, fontWeight: stylesGlobal.typography.weights.semibold as any }}>
-                    Enviar Comentario
-                  </Text>
-                </TouchableOpacity>
-              </View>
-
-              {comentarios.map((comentario) => (
-                <View
-                  key={comentario.id}
-                  style={{
-                    backgroundColor: stylesGlobal.colors.surface.primary as string,
-                    borderRadius: 8, padding: stylesGlobal.spacing.scale[4],
-                    marginBottom: stylesGlobal.spacing.scale[3],
-                    borderLeftWidth: 3, borderLeftColor: primary,
-                    shadowColor: "#000", shadowOffset: { width: 0, height: 1 },
-                    shadowOpacity: 0.05, shadowRadius: 2, elevation: 1
-                  }}
-                >
-                  <Text style={{
-                    fontSize: stylesGlobal.typography.scale.sm,
-                    color: stylesGlobal.colors.text.primary as string,
-                    lineHeight: Math.round(stylesGlobal.typography.leading.normal * stylesGlobal.typography.scale.sm),
-                    marginBottom: stylesGlobal.spacing.scale[2]
-                  }}>
-                    &ldquo;{comentario.texto}&rdquo;
-                  </Text>
-                  <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                    <Text style={{ fontSize: stylesGlobal.typography.scale.xs, color: stylesGlobal.colors.text.secondary as string, fontWeight: stylesGlobal.typography.weights.semibold as any }}>
-                      {comentario.usuario}
-                    </Text>
-                    <Text style={{ fontSize: stylesGlobal.typography.scale.xs, color: stylesGlobal.colors.text.tertiary as string }}>
-                      {comentario.fecha}
-                    </Text>
-                  </View>
-                </View>
-              ))}
-            </>
-          )}
         </View>
       </ScrollView>
     </SafeAreaView>

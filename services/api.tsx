@@ -1,5 +1,13 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
+import { Platform } from 'react-native';
+
+// En web + desarrollo se usa el back LOCAL (evita CORS de Render con localhost).
+// En teléfono y en producción se usa Render (en nativo no hay CORS).
+const API_BASE_URL =
+  __DEV__ && Platform.OS === 'web'
+    ? 'http://localhost:5000/api'
+    : 'https://back-yvy1.onrender.com/api';
 
 // Interfaces para tipos de datos
 interface LoginCredentials {
@@ -123,7 +131,7 @@ interface ColaboradorData {
 
 // Configuración global de Axios
 export const api: AxiosInstance = axios.create({
-  baseURL: 'https://back-three-gamma.vercel.app/api', // URL de tu API en Vercel
+  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
@@ -153,7 +161,12 @@ api.interceptors.response.use(
   (response: AxiosResponse) => response.data,
   (error: any): Promise<ErrorResponse> => {
     console.error('API Error:', error.response?.data || error.message);
-    
+
+    // Token inválido/expirado: borrar el token guardado para no quedar en bucle de 401
+    if (error.response?.status === 401) {
+      AsyncStorage.removeItem('token').catch(() => {});
+    }
+
     // Manejar diferentes tipos de errores del backend
     if (error.response?.data) {
       const errorData = error.response.data;
@@ -332,6 +345,36 @@ export const publicAPI = {
   getServicios: async (): Promise<ApiResponse<ServicioData[]>> => {
     try {
       const response = await api.get('/servicios');
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Configuración del sitio (logo, contacto, redes sociales) — igual que la web
+  getConfiguracion: async (): Promise<any> => {
+    try {
+      const response = await api.get('/configuracion');
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Valores (sección Nosotros)
+  getValores: async (): Promise<any> => {
+    try {
+      const response = await api.get('/valores');
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Formulario de contacto → envía correo al negocio
+  enviarContacto: async (data: { nombre: string; email: string; telefono?: string; mensaje: string }): Promise<any> => {
+    try {
+      const response = await api.post('/contacto', data);
       return response;
     } catch (error) {
       throw error;

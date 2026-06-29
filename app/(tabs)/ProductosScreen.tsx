@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Picker } from '@react-native-picker/picker';
 import { useRoute } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -20,10 +21,14 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { publicAPI } from '../../services/api';
+import solicitudService from '../../services/solicitudService';
 import { globalStyles, stylesGlobal } from '../../styles/stylesGlobal';
+import { AppText } from '../../components/ui/AppText';
+import { useAuth } from '../../context/AuthProvider';
+import { useFavoritos } from '../../context/FavoritosContext';
 
-// ⚠️ Reemplaza con el número real del negocio (con código de país, sin + ni espacios)
-const WHATSAPP_NUMBER = '5218001234567';
+// Número de WhatsApp por defecto (se sobrescribe con el de la config del sitio).
+const WHATSAPP_FALLBACK = '527711234567';
 
 interface ProductoData {
   _id?: string;
@@ -76,7 +81,15 @@ const surfaceTertiary = stylesGlobal.colors.surface.tertiary as string;
 const ProductosScreen: React.FC = () => {
   const [searchTriggered, setSearchTriggered] = useState(false);
   const route = useRoute();
+  const router = useRouter();
+  const { isAuthenticated } = useAuth();
+  const { esFavorito, toggleFavorito } = useFavoritos();
   const localidadParam = (route.params && (route.params as any).localidad) || null;
+
+  // Solicitud de cotización
+  const [showSolicitud, setShowSolicitud] = useState(false);
+  const [mensajeSolicitud, setMensajeSolicitud] = useState('');
+  const [enviandoSolicitud, setEnviandoSolicitud] = useState(false);
 
   const [productos, setProductos] = useState<ProductoData[]>([]);
   const [categorias, setCategorias] = useState<CategoriaData[]>([]);
@@ -90,6 +103,7 @@ const ProductosScreen: React.FC = () => {
   const [selectedLocalidad, setSelectedLocalidad] = useState<string | null>(null);
   const [soloDisponibles] = useState<boolean>(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [whatsappNumber, setWhatsappNumber] = useState<string>(WHATSAPP_FALLBACK);
 
   const tallasUnicas = React.useMemo(() => {
     const tallasSet = new Set<string>();
@@ -162,6 +176,16 @@ const ProductosScreen: React.FC = () => {
       let cats = Array.isArray(categoriasResponse) ? categoriasResponse : categoriasResponse.data || [];
       cats = cats.map((cat: any) => ({ ...cat, id: cat.id ?? cat._id }));
       setCategorias(cats);
+
+      // WhatsApp del negocio desde la configuración del sitio (no bloquea si falla)
+      try {
+        const config = await publicAPI.getConfiguracion();
+        const raw = config?.redesSociales?.whatsapp || '';
+        const digits = String(raw).replace(/\D/g, '');
+        if (digits) setWhatsappNumber(digits);
+      } catch {
+        // se mantiene WHATSAPP_FALLBACK
+      }
     } catch (error: any) {
       console.error('Error loading data:', error);
       Alert.alert('Error', 'No se pudieron cargar los productos');
@@ -222,7 +246,7 @@ const ProductosScreen: React.FC = () => {
   // Abre WhatsApp con mensaje predefinido sobre el producto
   const handleContactWhatsApp = (producto: ProductoData) => {
     const mensaje = `Hola, estoy interesado/a en el producto: *${producto.nombre}*${producto.tipoTela ? `\nTipo de tela: ${producto.tipoTela}` : ''}. ¿Podría darme más información?`;
-    const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(mensaje)}`;
+    const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(mensaje)}`;
     Linking.canOpenURL(url)
       .then(supported => {
         if (supported) {
@@ -232,6 +256,52 @@ const ProductosScreen: React.FC = () => {
         }
       })
       .catch(() => Alert.alert('Error', 'No se pudo abrir WhatsApp.'));
+  };
+
+  // Favorito: requiere sesión; si no, manda a Login
+  const handleToggleFav = (producto: ProductoData) => {
+    if (!isAuthenticated) {
+      Alert.alert('Inicia sesión', 'Crea una cuenta o inicia sesión para guardar favoritos.', [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Iniciar sesión', onPress: () => router.push('/LoginScreen') },
+      ]);
+      return;
+    }
+    toggleFavorito(producto);
+  };
+
+  // Solicitar cotización (guardada en el backend); requiere sesión
+  const handleAbrirSolicitud = () => {
+    if (!isAuthenticated) {
+      Alert.alert('Inicia sesión', 'Inicia sesión para enviar una solicitud de cotización.', [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Iniciar sesión', onPress: () => router.push('/LoginScreen') },
+      ]);
+      return;
+    }
+    setMensajeSolicitud('');
+    setShowSolicitud(true);
+  };
+
+  const handleEnviarSolicitud = async () => {
+    if (!selectedProduct) return;
+    try {
+      setEnviandoSolicitud(true);
+      await solicitudService.create({
+        productos: [{ productoId: selectedProduct._id, nombre: selectedProduct.nombre, imagenURL: selectedProduct.imagenURL }],
+        mensaje: mensajeSolicitud,
+      });
+      setShowSolicitud(false);
+      setShowModal(false);
+      Alert.alert('✅ Solicitud enviada', 'Tu solicitud de cotización fue enviada.', [
+        { text: 'Ver mis solicitudes', onPress: () => router.push('/MisSolicitudes') },
+        { text: 'OK' },
+      ]);
+    } catch (e: any) {
+      Alert.alert('Error', e?.error || 'No se pudo enviar la solicitud.');
+    } finally {
+      setEnviandoSolicitud(false);
+    }
   };
 
   const getLocalidadNombre = (producto: ProductoData) => {
@@ -286,6 +356,19 @@ const ProductosScreen: React.FC = () => {
         )}
       </View>
 
+      {/* Corazón de favorito */}
+      <TouchableOpacity
+        onPress={() => handleToggleFav(item)}
+        style={{ position: 'absolute', top: 8, right: 8, backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 16, padding: 6 }}
+        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+      >
+        <Ionicons
+          name={esFavorito(item._id || item.id || '') ? 'heart' : 'heart-outline'}
+          size={20}
+          color={primary}
+        />
+      </TouchableOpacity>
+
       <Text style={[globalStyles.listItemTitle, { marginBottom: stylesGlobal.spacing.scale[1] }]} numberOfLines={2}>
         {item.nombre}
       </Text>
@@ -294,20 +377,6 @@ const ProductosScreen: React.FC = () => {
         <Text style={[globalStyles.listItemSubtitle, { color: textSecondary, marginBottom: stylesGlobal.spacing.scale[1] }]}>
           {item.tipoTela}
         </Text>
-      )}
-
-      {item.disponible !== false && (
-        <View style={{
-          backgroundColor: stylesGlobal.colors.semantic.success.light as string,
-          paddingHorizontal: stylesGlobal.spacing.scale[1],
-          paddingVertical: 2,
-          borderRadius: parseInt(stylesGlobal.borders.radius.sm),
-          alignSelf: 'flex-start',
-        }}>
-          <Text style={[globalStyles.listItemSubtitle, { color: stylesGlobal.colors.semantic.success.dark }]}>
-            Disponible
-          </Text>
-        </View>
       )}
     </TouchableOpacity>
   );
@@ -351,29 +420,11 @@ const ProductosScreen: React.FC = () => {
                   )}
                 </View>
 
-                {/* Nombre y estado */}
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: stylesGlobal.spacing.scale[4] }}>
-                  <Text style={[globalStyles.listItemTitle, { flex: 1, fontSize: 20, marginRight: 8 }]}>
+                {/* Nombre */}
+                <View style={{ marginBottom: stylesGlobal.spacing.scale[4] }}>
+                  <Text style={[globalStyles.listItemTitle, { fontSize: 20 }]}>
                     {selectedProduct.nombre}
                   </Text>
-                  <View style={{
-                    backgroundColor: selectedProduct.disponible !== false
-                      ? stylesGlobal.colors.semantic.success.light as string
-                      : stylesGlobal.colors.semantic.error.light as string,
-                    paddingHorizontal: 10,
-                    paddingVertical: 4,
-                    borderRadius: 20,
-                  }}>
-                    <Text style={{
-                      fontSize: 12,
-                      fontWeight: '600',
-                      color: selectedProduct.disponible !== false
-                        ? stylesGlobal.colors.semantic.success.dark as string
-                        : stylesGlobal.colors.semantic.error.dark as string,
-                    }}>
-                      {selectedProduct.disponible !== false ? 'Disponible' : 'No disponible'}
-                    </Text>
-                  </View>
                 </View>
 
                 {/* Detalles en filas */}
@@ -433,6 +484,42 @@ const ProductosScreen: React.FC = () => {
                   </View>
                 )}
 
+                {/* Acciones de usuario registrado */}
+                <View style={{ flexDirection: 'row', gap: 10, marginBottom: stylesGlobal.spacing.scale[3] }}>
+                  <TouchableOpacity
+                    style={{
+                      flex: 1, borderRadius: 12, paddingVertical: 13, flexDirection: 'row',
+                      alignItems: 'center', justifyContent: 'center', gap: 8,
+                      borderWidth: 1.5, borderColor: primary,
+                      backgroundColor: esFavorito(selectedProduct._id || selectedProduct.id || '') ? stylesGlobal.colors.primary[50] as string : 'transparent',
+                    }}
+                    onPress={() => handleToggleFav(selectedProduct)}
+                    activeOpacity={0.85}
+                  >
+                    <Ionicons
+                      name={esFavorito(selectedProduct._id || selectedProduct.id || '') ? 'heart' : 'heart-outline'}
+                      size={18}
+                      color={primary}
+                    />
+                    <Text style={{ color: primary, fontWeight: '700', fontSize: 14 }}>
+                      {esFavorito(selectedProduct._id || selectedProduct.id || '') ? 'Guardado' : 'Favorito'}
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={{
+                      flex: 1, borderRadius: 12, paddingVertical: 13, flexDirection: 'row',
+                      alignItems: 'center', justifyContent: 'center', gap: 8,
+                      backgroundColor: stylesGlobal.colors.secondary[500] as string,
+                    }}
+                    onPress={handleAbrirSolicitud}
+                    activeOpacity={0.85}
+                  >
+                    <MaterialIcons name="request-quote" size={18} color="#fff" />
+                    <Text style={{ color: '#fff', fontWeight: '700', fontSize: 14 }}>Cotización</Text>
+                  </TouchableOpacity>
+                </View>
+
                 {/* Botón WhatsApp */}
                 <TouchableOpacity
                   style={{
@@ -457,6 +544,39 @@ const ProductosScreen: React.FC = () => {
             )}
           </View>
         </ScrollView>
+
+        {/* Modal de solicitud de cotización */}
+        <Modal visible={showSolicitud} transparent animationType="fade" onRequestClose={() => setShowSolicitud(false)}>
+          <View style={{ flex: 1, backgroundColor: 'rgba(42,36,31,0.6)', justifyContent: 'center', padding: 24 }}>
+            <View style={{ backgroundColor: '#fff', borderRadius: 16, padding: 20 }}>
+              <Text style={{ fontSize: 18, fontWeight: '700', color: textPrimary, marginBottom: 4 }}>Solicitar cotización</Text>
+              <Text style={{ fontSize: 13, color: textSecondary, marginBottom: 12 }}>{selectedProduct?.nombre}</Text>
+              <TextInput
+                style={{ borderWidth: 1, borderColor: stylesGlobal.borders.colors.muted, borderRadius: 10, padding: 12, minHeight: 80, textAlignVertical: 'top', color: textPrimary, marginBottom: 16 }}
+                placeholder="Mensaje (opcional): cantidad, color, fecha…"
+                placeholderTextColor={textMuted}
+                value={mensajeSolicitud}
+                onChangeText={setMensajeSolicitud}
+                multiline
+              />
+              <View style={{ flexDirection: 'row', gap: 10 }}>
+                <TouchableOpacity
+                  style={{ flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: 'center', borderWidth: 1, borderColor: stylesGlobal.borders.colors.muted }}
+                  onPress={() => setShowSolicitud(false)}
+                >
+                  <Text style={{ color: textSecondary, fontWeight: '600' }}>Cancelar</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={{ flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: 'center', backgroundColor: primary, opacity: enviandoSolicitud ? 0.7 : 1 }}
+                  onPress={handleEnviarSolicitud}
+                  disabled={enviandoSolicitud}
+                >
+                  {enviandoSolicitud ? <ActivityIndicator color="#fff" /> : <Text style={{ color: '#fff', fontWeight: '700' }}>Enviar</Text>}
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
       </SafeAreaView>
     </Modal>
   );
@@ -476,9 +596,10 @@ const ProductosScreen: React.FC = () => {
     <SafeAreaView style={globalStyles.screenBase}>
       <>
         <View style={{ padding: stylesGlobal.spacing.scale[4], marginTop: stylesGlobal.spacing.scale[1] }}>
-          <Text style={[globalStyles.headerTitle, { marginBottom: stylesGlobal.spacing.scale[6] }]}>
+          <AppText variant="eyebrow" style={{ marginBottom: 6 }}>La Aterciopelada</AppText>
+          <AppText variant="display" style={{ marginBottom: stylesGlobal.spacing.scale[5] }}>
             Productos
-          </Text>
+          </AppText>
 
           <View style={{ marginBottom: stylesGlobal.spacing.scale[3] }}>
             {/* Buscador */}
