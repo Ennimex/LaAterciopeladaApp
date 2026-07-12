@@ -23,8 +23,10 @@ export default function MisFavoritos() {
   const { favoritos, toggleFavorito, loading } = useFavoritos();
   const [enviando, setEnviando] = useState(false);
 
+  // Sin sesión no hay favoritos que mostrar: de vuelta al Inicio (a Login solo
+  // se llega cuando el usuario lo pide desde Más o Productos)
   useEffect(() => {
-    if (!isAuthenticated) router.replace('/LoginScreen');
+    if (!isAuthenticated) router.replace('/(tabs)');
   }, [isAuthenticated, router]);
 
   const goBack = () => (router.canGoBack() ? router.back() : router.replace('/(tabs)'));

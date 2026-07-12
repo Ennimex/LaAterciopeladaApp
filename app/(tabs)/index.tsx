@@ -199,23 +199,6 @@ const InicioScreen = () => {
             </Text>
           </TouchableOpacity>
 
-          {!isAuthenticated && (
-            <View style={{ flexDirection: 'row', gap: 12, marginTop: stylesGlobal.spacing.scale[2] }}>
-              <TouchableOpacity
-                style={{ backgroundColor: primary, paddingVertical: 10, paddingHorizontal: 24, borderRadius: 10, alignItems: 'center' }}
-                onPress={() => router.push('/LoginScreen')}
-              >
-                <Text style={{ color: '#fff', fontWeight: '600', fontSize: 15 }}>Iniciar Sesión</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={{ backgroundColor: 'transparent', paddingVertical: 10, paddingHorizontal: 24, borderRadius: 10, borderWidth: 1.5, borderColor: primary, alignItems: 'center' }}
-                onPress={() => router.push('/RegisterScreen')}
-              >
-                <Text style={{ color: primary, fontWeight: '600', fontSize: 15 }}>Registrarse</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-
           {isAuthenticated && user && (
             <TouchableOpacity
               onPress={() => router.push('/PerfilScreen')}

@@ -1,17 +1,9 @@
-import { DrawerMenu } from "@/components/ui/DrawerMenu";
 import { IconSymbol } from "@/components/ui/IconSymbol";
-import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
-import React, { useState } from "react";
-import { TouchableOpacity, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import React from "react";
 
 export default function TabLayout() {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const insets = useSafeAreaInsets();
-
   return (
-    <View style={{ flex: 1 }}>
     <Tabs
       screenOptions={{
         headerShown: false,
@@ -73,34 +65,15 @@ export default function TabLayout() {
           ),
         }}
       />
-    </Tabs>
-
-      {/* Botón de menú (hamburguesa) flotante */}
-      <TouchableOpacity
-        onPress={() => setMenuOpen(true)}
-        style={{
-          position: "absolute",
-          top: insets.top + 6,
-          right: 14,
-          zIndex: 50,
-          width: 40,
-          height: 40,
-          borderRadius: 20,
-          backgroundColor: "rgba(255,255,255,0.92)",
-          justifyContent: "center",
-          alignItems: "center",
-          shadowColor: "#2a241f",
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.12,
-          shadowRadius: 4,
-          elevation: 4,
+      <Tabs.Screen
+        name="MasScreen"
+        options={{
+          title: "Más",
+          tabBarIcon: ({ color }) => (
+            <IconSymbol size={26} name="line.3.horizontal" color={color} />
+          ),
         }}
-        accessibilityLabel="Abrir menú"
-      >
-        <Ionicons name="menu" size={24} color="#d63384" />
-      </TouchableOpacity>
-
-      <DrawerMenu visible={menuOpen} onClose={() => setMenuOpen(false)} />
-    </View>
+      />
+    </Tabs>
   );
 }

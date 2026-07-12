@@ -258,13 +258,12 @@ const ProductosScreen: React.FC = () => {
       .catch(() => Alert.alert('Error', 'No se pudo abrir WhatsApp.'));
   };
 
-  // Favorito: requiere sesión; si no, manda a Login
+  // Favorito: requiere sesión; si no, manda directo a Login (se cierra el modal
+  // de detalle porque un Modal nativo taparía la pantalla de Login)
   const handleToggleFav = (producto: ProductoData) => {
     if (!isAuthenticated) {
-      Alert.alert('Inicia sesión', 'Crea una cuenta o inicia sesión para guardar favoritos.', [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: 'Iniciar sesión', onPress: () => router.push('/LoginScreen') },
-      ]);
+      setShowModal(false);
+      router.push('/LoginScreen');
       return;
     }
     toggleFavorito(producto);
@@ -273,10 +272,8 @@ const ProductosScreen: React.FC = () => {
   // Solicitar cotización (guardada en el backend); requiere sesión
   const handleAbrirSolicitud = () => {
     if (!isAuthenticated) {
-      Alert.alert('Inicia sesión', 'Inicia sesión para enviar una solicitud de cotización.', [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: 'Iniciar sesión', onPress: () => router.push('/LoginScreen') },
-      ]);
+      setShowModal(false);
+      router.push('/LoginScreen');
       return;
     }
     setMensajeSolicitud('');

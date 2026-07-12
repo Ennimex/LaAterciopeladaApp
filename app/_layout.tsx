@@ -8,6 +8,12 @@ import 'react-native-reanimated';
 import { AuthProvider } from '../context/AuthProvider';
 import { FavoritosProvider } from '../context/FavoritosContext';
 
+// La app SIEMPRE abre en las tabs (Inicio); nunca en Login ni en otra pantalla
+// aunque el sistema restaure el estado o llegue un deep link.
+export const unstable_settings = {
+  anchor: '(tabs)',
+};
+
 export default function RootLayout() {
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
@@ -29,14 +35,16 @@ export default function RootLayout() {
       <FavoritosProvider>
         <ThemeProvider value={DefaultTheme}>
           <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="PerfilScreen" options={{ headerShown: false }} />
             <Stack.Screen name="LoginScreen" options={{ headerShown: false }} />
             <Stack.Screen name="RegisterScreen" options={{ headerShown: false }} />
+            <Stack.Screen name="ForgotPassword" options={{ headerShown: false }} />
             <Stack.Screen name="MisFavoritos" options={{ headerShown: false }} />
             <Stack.Screen name="MisSolicitudes" options={{ headerShown: false }} />
             <Stack.Screen name="Nosotros" options={{ headerShown: false }} />
             <Stack.Screen name="Contacto" options={{ headerShown: false }} />
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="AdminScreen" options={{ headerShown: false }} />
             <Stack.Screen name="+not-found" />
           </Stack>
           <StatusBar style="dark" />

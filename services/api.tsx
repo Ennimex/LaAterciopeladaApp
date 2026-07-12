@@ -223,6 +223,17 @@ export const authAPI = {
       throw error;
     }
   },
+
+  // Recuperación de contraseña: envía el correo con el enlace de restablecimiento
+  // (el enlace del correo se completa en el sitio web)
+  forgotPassword: async (email: string): Promise<any> => {
+    try {
+      const response = await api.post('/auth/forgot-password', { email });
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
 };
 
 // Funciones para páginas públicas
@@ -316,6 +327,19 @@ export const publicAPI = {
     try {
       const response = await api.get('/videos');
       return response;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Galería paginada (fotos + videos combinados con campo `tipo`)
+  getGaleriaPagina: async (
+    pagina: number = 1,
+    limite: number = 12
+  ): Promise<{ galeria: any[]; paginacion: { total: number; pagina: number; porPagina: number; totalPaginas: number } }> => {
+    try {
+      const response = await api.get(`/public/galeria/pagina/${pagina}?limite=${limite}`);
+      return response as any;
     } catch (error) {
       throw error;
     }

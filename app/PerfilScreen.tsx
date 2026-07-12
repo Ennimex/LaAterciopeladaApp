@@ -73,9 +73,10 @@ const PerfilScreen = () => {
     loadProfile();
   }, [loadProfile]);
 
-  // Si no hay sesión, salir del Perfil (evita pedir /perfil sin token → 401 en bucle)
+  // Si no hay sesión, salir del Perfil al Inicio (evita pedir /perfil sin token → 401
+  // en bucle, y que el Login aparezca sin que el usuario lo haya pedido)
   useEffect(() => {
-    if (!user) router.replace('/LoginScreen');
+    if (!user) router.replace('/(tabs)');
   }, [user, router]);
 
   const handleSaveProfile = async () => {
@@ -132,7 +133,7 @@ const PerfilScreen = () => {
           style: 'destructive',
           onPress: async () => {
             await logout();
-            router.replace('/LoginScreen');
+            router.replace('/(tabs)');
           },
         },
       ]

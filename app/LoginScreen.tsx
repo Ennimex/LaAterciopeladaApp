@@ -33,7 +33,8 @@ export default function LoginScreen() {
     try {
       const result = await login({ email: email.trim(), password });
       if (result.success) {
-        router.replace('/(tabs)');
+        // Los administradores ven primero el aviso de que el panel completo está en la web
+        router.replace(result.role === 'admin' ? '/AdminScreen' : '/(tabs)');
       } else {
         setError(result.message || 'Error al iniciar sesión');
       }
@@ -103,6 +104,13 @@ export default function LoginScreen() {
         </View>
 
         {error ? <Text style={loginStyles.error}>{error}</Text> : null}
+
+        <TouchableOpacity
+          style={loginStyles.forgotLink}
+          onPress={() => router.push('/ForgotPassword')}
+        >
+          <Text style={loginStyles.forgotText}>¿Olvidaste tu contraseña?</Text>
+        </TouchableOpacity>
 
         <TouchableOpacity
           style={[loginStyles.button, loading && { opacity: 0.7 }]}
@@ -233,6 +241,15 @@ const loginStyles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  forgotLink: {
+    alignSelf: 'flex-end',
+    marginBottom: 4,
+  },
+  forgotText: {
+    color: typeof stylesGlobal.colors.primary[500] === 'string' ? stylesGlobal.colors.primary[500] : '#d63384',
+    fontSize: stylesGlobal.typography.body.small.fontSize,
+    fontWeight: '600',
   },
   registerText: {
     color: typeof stylesGlobal.colors.text.secondary === 'string' ? stylesGlobal.colors.text.secondary : '#524842',

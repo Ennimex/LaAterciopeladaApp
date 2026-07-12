@@ -37,15 +37,9 @@
         }
       ],
       "expo-video",
-      [
-        "expo-build-properties",
-        {
-          "android": {
-            "kotlinVersion": "1.9.24"
-          }
-        }
-      ],
-      "expo-audio"
+      "expo-build-properties",
+      "expo-audio",
+      "expo-asset"
     ],
     "experiments": {
       "typedRoutes": true

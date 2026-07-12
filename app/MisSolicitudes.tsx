@@ -31,8 +31,9 @@ export default function MisSolicitudes() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
+  // Sin sesión, de vuelta al Inicio (a Login solo se llega cuando el usuario lo pide)
   useEffect(() => {
-    if (!isAuthenticated) router.replace('/LoginScreen');
+    if (!isAuthenticated) router.replace('/(tabs)');
   }, [isAuthenticated, router]);
 
   const cargar = useCallback(async () => {

@@ -100,12 +100,37 @@ const GaleriaScreen: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [whatsappNumber, setWhatsappNumber] = useState<string>(WHATSAPP_FALLBACK);
 
+  // Galería general paginada (endpoint /public/galeria/pagina): se van pidiendo
+  // páginas de 12 al backend y solo se muestran los elementos SIN evento
+  const [galeriaGeneral, setGaleriaGeneral] = useState<MediaItem[]>([]);
+  const [paginaActual, setPaginaActual] = useState(0);
+  const [totalPaginas, setTotalPaginas] = useState(1);
+  const [cargandoMas, setCargandoMas] = useState(false);
+
   // Lightbox de fotos (con navegación dentro de un grupo)
   const [currentFotos, setCurrentFotos] = useState<Photo[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [imageVisible, setImageVisible] = useState(false);
   // Reproductor de video
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
+
+  const cargarPaginaGeneral = async (pagina: number) => {
+    try {
+      setCargandoMas(true);
+      const res = await publicAPI.getGaleriaPagina(pagina, 12);
+      const nuevos = ((res?.galeria || []) as MediaItem[]).filter((m) => !idDe(m.eventoId));
+      setGaleriaGeneral((prev) => {
+        const vistos = new Set(prev.map((m) => m._id));
+        return [...prev, ...nuevos.filter((m) => !vistos.has(m._id))];
+      });
+      setPaginaActual(res?.paginacion?.pagina ?? pagina);
+      setTotalPaginas(res?.paginacion?.totalPaginas ?? pagina);
+    } catch {
+      // silencioso: la sección general simplemente no crece
+    } finally {
+      setCargandoMas(false);
+    }
+  };
 
   useEffect(() => {
     const cargar = async () => {
@@ -124,6 +149,8 @@ const GaleriaScreen: React.FC = () => {
       } finally {
         setLoading(false);
       }
+      // Primera página de la galería general (no bloquea la carga principal)
+      cargarPaginaGeneral(1);
       // WhatsApp desde la configuración del sitio (no bloquea)
       try {
         const config = await publicAPI.getConfiguracion();
@@ -155,9 +182,16 @@ const GaleriaScreen: React.FC = () => {
     return [...f, ...v];
   };
 
-  // Media SIN evento (galería general)
-  const fotosGenerales = useMemo(() => fotos.filter((f) => !idDe(f.eventoId)), [fotos]);
-  const videosGenerales = useMemo(() => videos.filter((v) => !idDe(v.eventoId)), [videos]);
+  // Media SIN evento (galería general) — viene del endpoint paginado
+  const fotosGenerales = useMemo(
+    () => galeriaGeneral.filter((m) => m.tipo === 'foto') as Photo[],
+    [galeriaGeneral]
+  );
+  const videosGenerales = useMemo(
+    () => galeriaGeneral.filter((m) => m.tipo === 'video') as Video[],
+    [galeriaGeneral]
+  );
+  const hayMasPaginas = paginaActual < totalPaginas;
 
   // ── WhatsApp ──
   const abrirWhatsApp = (mensaje: string) => {
@@ -369,8 +403,8 @@ const GaleriaScreen: React.FC = () => {
           </>
         )}
 
-        {/* ── GALERÍA GENERAL (sin evento) ── */}
-        {(videosGenerales.length > 0 || fotosGenerales.length > 0) && (
+        {/* ── GALERÍA GENERAL (sin evento, paginada) ── */}
+        {(videosGenerales.length > 0 || fotosGenerales.length > 0 || hayMasPaginas) && (
           <>
             <AppText variant="h2" style={{ marginHorizontal: cardMargin, marginTop: 28, marginBottom: 8 }}>
               Galería
@@ -425,6 +459,29 @@ const GaleriaScreen: React.FC = () => {
                   </TouchableOpacity>
                 ))}
               </View>
+            )}
+
+            {hayMasPaginas && (
+              <TouchableOpacity
+                onPress={() => cargarPaginaGeneral(paginaActual + 1)}
+                disabled={cargandoMas}
+                activeOpacity={0.8}
+                style={{
+                  flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8,
+                  marginHorizontal: cardMargin, marginTop: 16, paddingVertical: 13,
+                  borderRadius: 12, borderWidth: 1.5, borderColor: PRIMARY, backgroundColor: SURFACE,
+                  opacity: cargandoMas ? 0.7 : 1,
+                }}
+              >
+                {cargandoMas ? (
+                  <ActivityIndicator size="small" color={PRIMARY} />
+                ) : (
+                  <>
+                    <Ionicons name="images-outline" size={18} color={PRIMARY} />
+                    <Text style={{ color: PRIMARY, fontWeight: '700', fontSize: 15 }}>Cargar más</Text>
+                  </>
+                )}
+              </TouchableOpacity>
             )}
           </>
         )}

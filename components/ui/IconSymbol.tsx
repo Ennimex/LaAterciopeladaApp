@@ -24,6 +24,7 @@ const MAPPING = {
   'wrench.and.screwdriver': 'build',
   'star.fill': 'star',
   'photo.on.rectangle': 'photo',
+  'line.3.horizontal': 'menu',
 } as IconMapping;
 
 /**
