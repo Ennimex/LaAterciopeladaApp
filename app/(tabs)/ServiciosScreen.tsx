@@ -6,35 +6,6 @@ import { publicAPI } from '../../services/api';
 import { AppText } from '../../components/ui/AppText';
 import { Hero } from '../../components/ui/Hero';
 
-type MaterialIconName = React.ComponentProps<typeof MaterialIcons>['name'];
-
-const beneficiosData: { id: string; titulo: string; descripcion: string; icono: MaterialIconName }[] = [
-  {
-    id: "calidad",
-    titulo: "Excelencia Artesanal",
-    descripcion: "Cada pieza es meticulosamente elaborada por maestras artesanas con décadas de experiencia, garantizando la más alta calidad.",
-    icono: "star",
-  },
-  {
-    id: "autenticidad",
-    titulo: "Herencia Cultural",
-    descripcion: "Preservamos técnicas ancestrales huastecas, manteniendo viva la tradición textil de nuestros pueblos originarios.",
-    icono: "eco",
-  },
-  {
-    id: "artesanos",
-    titulo: "Comercio Justo",
-    descripcion: "Trabajamos directamente con comunidades artesanales, asegurando condiciones dignas y precios justos.",
-    icono: "handshake",
-  },
-  {
-    id: "exclusividad",
-    titulo: "Piezas Únicas",
-    descripcion: "Cada creación es irrepetible, diseñada especialmente para quienes valoran la autenticidad y la exclusividad.",
-    icono: "diamond",
-  },
-];
-
 interface Servicio {
   _id?: string;
   id?: string;
@@ -218,20 +189,6 @@ const ArtisanServicesScreen = () => {
             ))}
           </ScrollView>
         )}
-
-        {/* Por Qué Elegirnos */}
-        <AppText variant="h2" style={styles.sectionTitle}>Por Qué Elegirnos</AppText>
-        {beneficiosData.map((benefit) => (
-          <View key={benefit.id} style={styles.benefitContainer}>
-            <View style={styles.benefitIconCircle}>
-              <MaterialIcons name={benefit.icono} size={22} color="#e6a756" />
-            </View>
-            <View style={styles.benefitContent}>
-              <Text style={styles.benefitTitle}>{benefit.titulo}</Text>
-              <Text style={styles.benefitDescription}>{benefit.descripcion}</Text>
-            </View>
-          </View>
-        ))}
 
         {/* Espaciado inferior */}
         <View style={{ height: 32 }} />

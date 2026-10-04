@@ -404,6 +404,24 @@ export const publicAPI = {
       throw error;
     }
   },
+
+  // Preguntas frecuentes publicadas
+  getPreguntasFrecuentes: async (): Promise<any[]> => {
+    const response = await api.get('/preguntas-frecuentes');
+    return Array.isArray(response) ? response : [];
+  },
+
+  // Buzón de quejas y sugerencias
+  enviarBuzon: async (data: {
+    tipo: 'queja' | 'sugerencia' | 'felicitacion';
+    mensaje: string;
+    nombre?: string;
+    email?: string;
+    telefono?: string;
+    quiereContacto?: boolean;
+  }): Promise<any> => {
+    return api.post('/buzon', data);
+  },
 };
 
 // Funciones para área administrativa

@@ -27,6 +27,8 @@ const TEXT_DARK = '#2a241f';
 const TEXT_MUTED = '#8b7d74';
 const BORDER = '#ddd6d1';
 
+import { numeroWhatsApp } from '../utils/whatsapp';
+
 export default function Contacto() {
   const router = useRouter();
   const [config, setConfig] = useState<any>(null);
@@ -39,9 +41,11 @@ export default function Contacto() {
 
   const goBack = () => (router.canGoBack() ? router.back() : router.replace('/(tabs)'));
 
-  const waNumber = String(config?.redesSociales?.whatsapp || '527711234567').replace(/\D/g, '');
-  const abrirWhatsApp = () =>
+  const waNumber = numeroWhatsApp(config);
+  const abrirWhatsApp = () => {
+    if (!waNumber) return;
     Linking.openURL(`https://wa.me/${waNumber}`).catch(() => Alert.alert('Error', 'No se pudo abrir WhatsApp.'));
+  };
 
   const validEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 
@@ -62,7 +66,7 @@ export default function Contacto() {
         telefono: form.telefono.trim(),
         mensaje: form.mensaje.trim(),
       });
-      Alert.alert('✅ Enviado', 'Mensaje enviado. Te responderemos pronto.');
+      Alert.alert('Enviado', 'Mensaje enviado. Te responderemos pronto.');
       setForm({ nombre: '', email: '', telefono: '', mensaje: '' });
     } catch (e: any) {
       Alert.alert('Error', e?.error || 'No se pudo enviar el mensaje.');

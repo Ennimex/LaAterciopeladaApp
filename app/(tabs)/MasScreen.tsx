@@ -114,6 +114,11 @@ export default function MasScreen() {
           <Row label="Contacto" icon="mail-outline" onPress={() => go('/Contacto')} isLast />
         </Section>
 
+        <Section title="Ayuda">
+          <Row label="Preguntas frecuentes" icon="help-circle-outline" onPress={() => go('/PreguntasFrecuentes')} />
+          <Row label="Quejas y sugerencias" icon="chatbox-ellipses-outline" onPress={() => go('/Buzon')} isLast />
+        </Section>
+
         {/* Siempre visible: sin sesión, cada opción lleva directo a Login */}
         <Section title="Mi cuenta">
           <Row label="Mi Perfil" icon="person-outline" onPress={() => goAuth('/PerfilScreen')} />

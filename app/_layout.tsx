@@ -44,6 +44,8 @@ export default function RootLayout() {
             <Stack.Screen name="MisSolicitudes" options={{ headerShown: false }} />
             <Stack.Screen name="Nosotros" options={{ headerShown: false }} />
             <Stack.Screen name="Contacto" options={{ headerShown: false }} />
+            <Stack.Screen name="PreguntasFrecuentes" options={{ headerShown: false }} />
+            <Stack.Screen name="Buzon" options={{ headerShown: false }} />
             <Stack.Screen name="AdminScreen" options={{ headerShown: false }} />
             <Stack.Screen name="+not-found" />
           </Stack>

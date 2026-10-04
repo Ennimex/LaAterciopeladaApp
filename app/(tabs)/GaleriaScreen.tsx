@@ -55,6 +55,8 @@ type MediaItem = (Photo | Video) & { tipo: 'foto' | 'video' };
 
 // ─── Constantes de marca ──────────────────────────────────────────────────────
 const PRIMARY = '#d63384';
+import { numeroWhatsApp } from '../../utils/whatsapp';
+
 const ACCENT = '#e6a756';
 const SAGE = '#6b9b6b';
 const BG = '#faf6ee';
@@ -62,7 +64,6 @@ const SURFACE = '#ffffff';
 const TEXT_DARK = '#2a241f';
 const TEXT_MUTED = '#8b7d74';
 const BORDER = '#ede9e6';
-const WHATSAPP_FALLBACK = '527711234567';
 
 // ─── VideoPlayer ────────────────────────────────────────────────────────────
 const VideoPlayer: React.FC<{ uri: string; style?: any }> = ({ uri, style }) => {
@@ -98,7 +99,7 @@ const GaleriaScreen: React.FC = () => {
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [whatsappNumber, setWhatsappNumber] = useState<string>(WHATSAPP_FALLBACK);
+  const [whatsappNumber, setWhatsappNumber] = useState<string | null>(null);
 
   // Galería general paginada (endpoint /public/galeria/pagina): se van pidiendo
   // páginas de 12 al backend y solo se muestran los elementos SIN evento
@@ -154,8 +155,7 @@ const GaleriaScreen: React.FC = () => {
       // WhatsApp desde la configuración del sitio (no bloquea)
       try {
         const config = await publicAPI.getConfiguracion();
-        const digits = String(config?.redesSociales?.whatsapp || '').replace(/\D/g, '');
-        if (digits) setWhatsappNumber(digits);
+        setWhatsappNumber(numeroWhatsApp(config));
       } catch {
         // se mantiene el fallback
       }
@@ -195,6 +195,10 @@ const GaleriaScreen: React.FC = () => {
 
   // ── WhatsApp ──
   const abrirWhatsApp = (mensaje: string) => {
+    if (!whatsappNumber) {
+      Alert.alert('Sin WhatsApp', 'El negocio aún no ha publicado su número de WhatsApp.');
+      return;
+    }
     const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(mensaje)}`;
     Linking.openURL(url).catch(() => Alert.alert('Error', 'No se pudo abrir WhatsApp.'));
   };

@@ -27,8 +27,7 @@ import { AppText } from '../../components/ui/AppText';
 import { useAuth } from '../../context/AuthProvider';
 import { useFavoritos } from '../../context/FavoritosContext';
 
-// Número de WhatsApp por defecto (se sobrescribe con el de la config del sitio).
-const WHATSAPP_FALLBACK = '527711234567';
+import { numeroWhatsApp } from '../../utils/whatsapp';
 
 interface ProductoData {
   _id?: string;
@@ -103,7 +102,7 @@ const ProductosScreen: React.FC = () => {
   const [selectedLocalidad, setSelectedLocalidad] = useState<string | null>(null);
   const [soloDisponibles] = useState<boolean>(false);
   const [showFilters, setShowFilters] = useState(false);
-  const [whatsappNumber, setWhatsappNumber] = useState<string>(WHATSAPP_FALLBACK);
+  const [whatsappNumber, setWhatsappNumber] = useState<string | null>(null);
 
   const tallasUnicas = React.useMemo(() => {
     const tallasSet = new Set<string>();
@@ -177,14 +176,12 @@ const ProductosScreen: React.FC = () => {
       cats = cats.map((cat: any) => ({ ...cat, id: cat.id ?? cat._id }));
       setCategorias(cats);
 
-      // WhatsApp del negocio desde la configuración del sitio (no bloquea si falla)
+      // WhatsApp del negocio desde la configuración del sitio (null si no hay)
       try {
         const config = await publicAPI.getConfiguracion();
-        const raw = config?.redesSociales?.whatsapp || '';
-        const digits = String(raw).replace(/\D/g, '');
-        if (digits) setWhatsappNumber(digits);
+        setWhatsappNumber(numeroWhatsApp(config));
       } catch {
-        // se mantiene WHATSAPP_FALLBACK
+        setWhatsappNumber(null);
       }
     } catch (error: any) {
       console.error('Error loading data:', error);
@@ -245,6 +242,10 @@ const ProductosScreen: React.FC = () => {
 
   // Abre WhatsApp con mensaje predefinido sobre el producto
   const handleContactWhatsApp = (producto: ProductoData) => {
+    if (!whatsappNumber) {
+      Alert.alert('Sin WhatsApp', 'El negocio aún no ha publicado su número de WhatsApp.');
+      return;
+    }
     const mensaje = `Hola, estoy interesado/a en el producto: *${producto.nombre}*${producto.tipoTela ? `\nTipo de tela: ${producto.tipoTela}` : ''}. ¿Podría darme más información?`;
     const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(mensaje)}`;
     Linking.canOpenURL(url)
