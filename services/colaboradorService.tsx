@@ -10,7 +10,8 @@ interface Colaborador {
   email?: string;
   telefono?: string;
   estado?: boolean;
-  imagen?: string;
+  imagen?: { url: string; publicId: string };
+  imagenURL?: string;
   createdAt?: string | Date;
   [key: string]: any; // For additional dynamic properties
 }

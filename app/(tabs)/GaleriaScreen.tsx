@@ -35,7 +35,8 @@ type Video = {
   url: string;
   titulo: string;
   descripcion?: string;
-  miniatura?: string;
+  miniatura?: { url: string; publicId: string };
+  miniaturaURL?: string;
   duracion?: number;
   eventoId?: any;
   fechaSubida?: string;
@@ -357,8 +358,8 @@ const GaleriaScreen: React.FC = () => {
                               activeOpacity={0.85}
                               style={{ width: thumbSize, height: thumbSize, borderRadius: 10, overflow: 'hidden', backgroundColor: '#fce7eb' }}
                             >
-                              {vid.miniatura ? (
-                                <Image source={{ uri: vid.miniatura }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+                              {vid.miniaturaURL ? (
+                                <Image source={{ uri: vid.miniaturaURL }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
                               ) : (
                                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                                   <MaterialIcons name="videocam" size={28} color={ACCENT} />
@@ -428,8 +429,8 @@ const GaleriaScreen: React.FC = () => {
                     style={{ width: 160, borderRadius: 14, overflow: 'hidden', backgroundColor: SURFACE, borderWidth: 1, borderColor: BORDER }}
                   >
                     <View style={{ width: 160, height: 160, backgroundColor: '#fce7eb', justifyContent: 'center', alignItems: 'center' }}>
-                      {video.miniatura ? (
-                        <Image source={{ uri: video.miniatura }} style={{ width: 160, height: 160 }} resizeMode="cover" />
+                      {video.miniaturaURL ? (
+                        <Image source={{ uri: video.miniaturaURL }} style={{ width: 160, height: 160 }} resizeMode="cover" />
                       ) : (
                         <MaterialIcons name="videocam" size={40} color={ACCENT} />
                       )}

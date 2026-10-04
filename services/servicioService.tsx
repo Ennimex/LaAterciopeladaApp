@@ -7,7 +7,8 @@ interface Servicio {
   nombre: string;
   descripcion: string;
   precio?: number | string;
-  imagen?: string;
+  imagen?: { url: string; publicId: string };
+  imagenURL?: string;
   createdAt?: string | Date;
   _id?: string; // For MongoDB compatibility
   [key: string]: any; // For additional dynamic properties

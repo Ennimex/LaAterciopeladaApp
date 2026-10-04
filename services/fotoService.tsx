@@ -6,7 +6,8 @@ interface Foto {
   id?: number;
   titulo: string;
   descripcion?: string;
-  imagen?: string;
+  imagen?: { url: string; publicId: string };
+  url?: string;
   createdAt?: string | Date;
   _id?: string; // For MongoDB compatibility
   [key: string]: any; // For additional dynamic properties

@@ -12,7 +12,8 @@ interface Servicio {
   nombre: string;
   titulo?: string;
   descripcion: string;
-  imagen?: string;
+  imagen?: { url: string; publicId: string };
+  imagenURL?: string;
   icono?: string;
 }
 
@@ -170,10 +171,10 @@ const ArtisanServicesScreen = () => {
                 activeOpacity={0.85}
                 onPress={() => {}}
               >
-                {service.imagen ? (
+                {service.imagenURL ? (
                   <View style={styles.serviceIconContainer}>
                     <Image
-                      source={{ uri: service.imagen }}
+                      source={{ uri: service.imagenURL }}
                       style={{ width: 60, height: 60, borderRadius: 30 }}
                       resizeMode="cover"
                     />

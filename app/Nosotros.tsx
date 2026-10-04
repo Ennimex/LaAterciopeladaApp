@@ -94,7 +94,7 @@ export default function Nosotros() {
             <>
               <AppText variant="h2" style={{ marginHorizontal: 12, marginTop: 12, marginBottom: 8 }}>Nuestro equipo</AppText>
               {colaboradores.map((c: any) => {
-                const foto = c.foto || c.imagenURL || c.imagen;
+                const foto = c.imagenURL || c.foto;
                 return (
                   <View key={c._id || c.nombre} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: SURFACE, borderRadius: 12, borderWidth: 1, borderColor: BORDER, padding: 12, marginHorizontal: 12, marginBottom: 10 }}>
                     <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: '#fce7eb', overflow: 'hidden', justifyContent: 'center', alignItems: 'center' }}>
