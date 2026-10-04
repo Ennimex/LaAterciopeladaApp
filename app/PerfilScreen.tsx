@@ -89,7 +89,7 @@ const PerfilScreen = () => {
     try {
       setSavingProfile(true);
       await profileService.updateProfile({ name, email, phone });
-      Alert.alert('✅ Éxito', 'Perfil actualizado correctamente');
+      Alert.alert('Éxito', 'Perfil actualizado correctamente');
     } catch (error: any) {
       Alert.alert('Error', error?.error || 'No se pudo actualizar el perfil');
     } finally {
@@ -111,7 +111,7 @@ const PerfilScreen = () => {
     try {
       setSavingPassword(true);
       await profileService.updatePassword({ currentPassword, newPassword });
-      Alert.alert('✅ Éxito', 'Contraseña actualizada correctamente');
+      Alert.alert('Éxito', 'Contraseña actualizada correctamente');
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');

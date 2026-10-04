@@ -46,7 +46,7 @@ export default function PreguntasFrecuentes() {
             </View>
           );
         })}
-        <Pressable style={styles.enlace} onPress={() => router.push('/Buzon')}>
+        <Pressable style={styles.enlace} onPress={() => router.push('/Buzon' as any)}>
           <MaterialIcons name="rate-review" size={20} color="#d63384" />
           <Text style={styles.enlaceTexto}>Déjanos una queja o sugerencia</Text>
         </Pressable>

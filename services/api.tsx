@@ -258,7 +258,7 @@ export const publicAPI = {
 
       return formattedResponse;
     } catch (error) {
-      console.error('❌ Error al obtener categorías:', error);
+      console.error('Error al obtener categorías:', error);
       throw error;
     }
   },

@@ -291,7 +291,7 @@ const ProductosScreen: React.FC = () => {
       });
       setShowSolicitud(false);
       setShowModal(false);
-      Alert.alert('✅ Solicitud enviada', 'Tu solicitud de cotización fue enviada.', [
+      Alert.alert('Solicitud enviada', 'Tu solicitud de cotización fue enviada.', [
         { text: 'Ver mis solicitudes', onPress: () => router.push('/MisSolicitudes') },
         { text: 'OK' },
       ]);

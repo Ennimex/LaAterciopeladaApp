@@ -50,7 +50,7 @@ export default function MisFavoritos() {
                 productos: favoritos.map((p: any) => ({ productoId: p._id, nombre: p.nombre, imagenURL: p.imagenURL })),
                 mensaje: 'Solicitud desde Mis Favoritos',
               });
-              Alert.alert('✅ Enviada', 'Tu solicitud de cotización fue enviada.', [
+              Alert.alert('Enviada', 'Tu solicitud de cotización fue enviada.', [
                 { text: 'Ver mis solicitudes', onPress: () => router.push('/MisSolicitudes') },
                 { text: 'OK' },
               ]);
